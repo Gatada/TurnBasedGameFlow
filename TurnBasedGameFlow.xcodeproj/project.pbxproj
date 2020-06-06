@@ -20,7 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		04D3A99F248B996400AE9325 /* TurnBasedGameFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TurnBasedGameFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04D3A99F248B996400AE9325 /* Game Flow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Game Flow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04D3A9A2248B996400AE9325 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		04D3A9AB248B996500AE9325 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		04D3A9AE248B996500AE9325 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -58,7 +58,7 @@
 		04D3A9A0248B996400AE9325 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				04D3A99F248B996400AE9325 /* TurnBasedGameFlow.app */,
+				04D3A99F248B996400AE9325 /* Game Flow.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -145,7 +145,7 @@
 			);
 			name = TurnBasedGameFlow;
 			productName = TurnBasedGameFlow;
-			productReference = 04D3A99F248B996400AE9325 /* TurnBasedGameFlow.app */;
+			productReference = 04D3A99F248B996400AE9325 /* Game Flow.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -349,9 +349,9 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.basberg.TurnBasedGameFlow;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Game Flow";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -368,9 +368,9 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.basberg.TurnBasedGameFlow;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Game Flow";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
