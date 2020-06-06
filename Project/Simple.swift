@@ -563,7 +563,16 @@ extension Simple: GKTurnBasedMatchmakerViewControllerDelegate {
     }
     
     func turnBasedMatchmakerViewController(_ viewController: GKTurnBasedMatchmakerViewController, didFailWithError error: Error) {
-        print("Match Maker failed with error: \(error)")
+        
+        let code = (error as NSError).code
+        
+        switch code {
+        case 15:
+            print("Application is not recognized by Game Center.")
+        default:
+            print("MatchMaker failed with error (\(code)): \(error.localizedDescription)")
+        }
+        
         self.dismiss(animated: true) {
             print("Dismissed Match Maker")
         }
