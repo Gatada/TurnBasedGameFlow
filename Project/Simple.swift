@@ -89,6 +89,7 @@ class Simple: UIViewController {
         setupGameCenter()
         authenticatePlayer()
         prepareAudio()
+        resetInterface()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -117,25 +118,7 @@ class Simple: UIViewController {
         matchMaker.isEnabled = GKLocalPlayer.local.isAuthenticated
         
         guard let match = currentMatch else {
-            matchState.text = " "
-            localPlayerState.text = " "
-            localPlayerOutcome.text = " "
-            opponentStatus.text = " "
-            opponentOutcome.text = " "
-            exchangeHistory.text = " "
-
-            updateMatch.isEnabled = false
-            sendReminder.isEnabled = false
-            beginExchange.isEnabled = false
-
-            endTurn.isEnabled = false
-            endTurnWin.isEnabled = false
-            endTurnLose.isEnabled = false
-
-            endGame.isEnabled = false
-
-            matchID.text = "No Match Selected"
-            
+            resetInterface()
             return
         }
 
@@ -222,29 +205,6 @@ class Simple: UIViewController {
 
         let stringArguments = [String]()
         let recipients = [currentOpponent]
-                
-        // QUESTION: Do we add current participant to receiver list of exchange?
-        //
-        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange says:
-        // All exchanges must include the current turn holder, as only the
-        // current turn holder is allowed to update the game status.
-        //
-        // Does that mean we have to manually add the current participant to
-        // the receiver list of the exchange? If this is not needed, why even
-        // point this out in the documentation?
-        //
-        // Seems to me that it works just as well without the current participant.
-        // However I get 100% of the time an error when replying to the request,
-        // so I'm unable to verify this.
-        //
-        // var recipients = [currentOpponent]
-        // guard let local = localParticipant else {
-        //     print("No current participant found for match \(currentMatch?.matchID ?? "N/A")")
-        //     return
-        // }
-        // if local != currentMatch?.currentParticipant {
-        //     recipients.append(local)
-        // }
         
         currentMatch?.sendExchange(to: recipients, data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
             if let receivedError = error {
@@ -477,6 +437,27 @@ class Simple: UIViewController {
     }
     
     // MARK: - Helpers
+    
+    func resetInterface() {
+        matchState.text = " "
+        localPlayerState.text = " "
+        localPlayerOutcome.text = " "
+        opponentStatus.text = " "
+        opponentOutcome.text = " "
+        exchangeHistory.text = " "
+
+        updateMatch.isEnabled = false
+        sendReminder.isEnabled = false
+        beginExchange.isEnabled = false
+
+        endTurn.isEnabled = false
+        endTurnWin.isEnabled = false
+        endTurnLose.isEnabled = false
+
+        endGame.isEnabled = false
+
+        matchID.text = "No Match Selected"
+    }
 
     func dataToStringArray(data: Data) -> [String]? {
       return (try? JSONSerialization.jsonObject(with: data, options: [])) as? [String]
