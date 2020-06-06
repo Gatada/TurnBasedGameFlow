@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Simple-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="Simple" customModule="TurnBasedGameFlow" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="61l-H5-ee8" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                <rect key="frame" x="37.5" y="48" width="300" height="50"/>
+                                <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="abZ-eF-V2K"/>
+                                </constraints>
+                                <state key="normal" title="Match Maker">
+                                    <color key="titleColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="25"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.maskToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="matchMakerTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ijg-ex-rwv"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" alpha="0.69999999999999996" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tap Match Maker button to leave current game, and optionally create or select another." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yLA-j5-5k4">
+                                <rect key="frame" x="37.5" y="112" width="300" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="625-Os-Jkr" userLabel="Match Container">
+                                <rect key="frame" x="37.5" y="173" width="300" height="450"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="open" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ee-el-4Q0">
+                                        <rect key="frame" x="140" y="0.0" width="50.5" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xsZ-e8-ZF9" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="154" y="237" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="End Turn Lose">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="endTurnLossTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wDM-5n-so5"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Opponent Status:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NnT-Ds-qyC">
+                                        <rect key="frame" x="47" y="91.5" width="85" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="XbD-FX-wv2">
+                                        <rect key="frame" x="98.5" y="4.5" width="33.5" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFa-SY-r29" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="179" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="Q6H-t9-bSl"/>
+                                        </constraints>
+                                        <state key="normal" title="Update Match">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="updateMatchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1IF-Xt-owX"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="lost" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lib-xT-SCI">
+                                        <rect key="frame" x="140" y="116" width="147" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="done" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xPe-iS-FRY">
+                                        <rect key="frame" x="140" y="87" width="127.5" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwc-EA-9cJ" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="154" y="179" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="End Turn">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="endTurnTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lsD-d1-UAS"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kpz-hh-KBB">
+                                        <rect key="frame" x="140" y="29" width="94.5" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="none" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgq-dh-ToL">
+                                        <rect key="frame" x="140" y="58" width="113.5" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eX-kc-a9s" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="154" y="294" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemPurpleColor" red="0.68627450980000004" green="0.32156862749999998" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="End Turn Win">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="endTurnWinTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="WBP-Kq-qmP"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Local Status:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="qGg-OV-G9T">
+                                        <rect key="frame" x="69" y="33.5" width="63" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Local Outcome:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="cMv-f3-4fT">
+                                        <rect key="frame" x="56.5" y="62.5" width="75.5" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Opponent Outcome:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="a4A-UW-Uhz">
+                                        <rect key="frame" x="34" y="120.5" width="98" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match ID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="vDF-Rc-GM1">
+                                        <rect key="frame" x="0.0" y="378" width="300" height="21"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YIz-Iw-Bpy">
+                                        <rect key="frame" x="99" y="399" width="102" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="5k6-9N-NJy"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="21"/>
+                                        <state key="normal" title="End Match"/>
+                                        <connections>
+                                            <action selector="endMatchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Dqp-Ok-xBl"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IgV-q0-QEz" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="294" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="Begin Exchange">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="10"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="beginExchangeTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Mdp-Sn-i2K"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3l6-Sc-irt" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="237" width="146" height="50"/>
+                                        <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="Send Reminder">
+                                            <color key="titleColor" name="Storefront Light"/>
+                                        </state>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <integer key="value" value="6"/>
+                                            </userDefinedRuntimeAttribute>
+                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                        </userDefinedRuntimeAttributes>
+                                        <connections>
+                                            <action selector="sendReminderTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NCT-DZ-UpL"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstItem="5ee-el-4Q0" firstAttribute="top" secondItem="625-Os-Jkr" secondAttribute="top" id="0Kq-Dh-coe"/>
+                                    <constraint firstItem="kpz-hh-KBB" firstAttribute="width" secondItem="qGg-OV-G9T" secondAttribute="width" multiplier="3:2" id="0ao-z3-ncL"/>
+                                    <constraint firstItem="Tgq-dh-ToL" firstAttribute="width" secondItem="cMv-f3-4fT" secondAttribute="width" multiplier="3:2" id="0uD-ER-TS2"/>
+                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="leading" secondItem="NnT-Ds-qyC" secondAttribute="trailing" constant="8" id="0ws-u4-3re"/>
+                                    <constraint firstItem="Lib-xT-SCI" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="1wg-3A-nN7"/>
+                                    <constraint firstItem="vDF-Rc-GM1" firstAttribute="centerX" secondItem="625-Os-Jkr" secondAttribute="centerX" id="35q-T0-rld"/>
+                                    <constraint firstItem="Tgq-dh-ToL" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="4X6-h0-mFI"/>
+                                    <constraint firstItem="xsZ-e8-ZF9" firstAttribute="centerX" secondItem="rwc-EA-9cJ" secondAttribute="centerX" id="5fE-Vl-xoV"/>
+                                    <constraint firstItem="qGg-OV-G9T" firstAttribute="centerY" secondItem="kpz-hh-KBB" secondAttribute="centerY" id="5l3-Yi-xry"/>
+                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="top" secondItem="Tgq-dh-ToL" secondAttribute="bottom" constant="8" id="75H-V7-mji"/>
+                                    <constraint firstItem="IgV-q0-QEz" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="BPo-BP-AQ8"/>
+                                    <constraint firstItem="kpz-hh-KBB" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="BZG-OW-zea"/>
+                                    <constraint firstItem="7eX-kc-a9s" firstAttribute="centerY" secondItem="IgV-q0-QEz" secondAttribute="centerY" id="CCx-iN-MQG"/>
+                                    <constraint firstItem="Lib-xT-SCI" firstAttribute="width" secondItem="a4A-UW-Uhz" secondAttribute="width" multiplier="3:2" id="E0k-MW-ZCY"/>
+                                    <constraint firstItem="5ee-el-4Q0" firstAttribute="leading" secondItem="XbD-FX-wv2" secondAttribute="trailing" constant="8" id="E1y-Ne-xFp"/>
+                                    <constraint firstItem="Tgq-dh-ToL" firstAttribute="leading" secondItem="cMv-f3-4fT" secondAttribute="trailing" constant="8" id="EOU-qJ-82T"/>
+                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="Eal-Ef-D3R"/>
+                                    <constraint firstItem="xsZ-e8-ZF9" firstAttribute="centerY" secondItem="3l6-Sc-irt" secondAttribute="centerY" id="EcK-Kd-fbe"/>
+                                    <constraint firstAttribute="trailing" secondItem="rwc-EA-9cJ" secondAttribute="trailing" id="GAt-4A-91k"/>
+                                    <constraint firstItem="5ee-el-4Q0" firstAttribute="width" secondItem="XbD-FX-wv2" secondAttribute="width" multiplier="3:2" id="H7B-oG-se7"/>
+                                    <constraint firstItem="7eX-kc-a9s" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="IUa-cX-wmf"/>
+                                    <constraint firstItem="IgV-q0-QEz" firstAttribute="top" secondItem="3l6-Sc-irt" secondAttribute="bottom" constant="7" id="Is9-Zg-NiI"/>
+                                    <constraint firstItem="rwc-EA-9cJ" firstAttribute="height" secondItem="nFa-SY-r29" secondAttribute="height" id="LW5-eI-iAU"/>
+                                    <constraint firstItem="IgV-q0-QEz" firstAttribute="height" secondItem="nFa-SY-r29" secondAttribute="height" id="NOo-oO-cbr"/>
+                                    <constraint firstItem="rwc-EA-9cJ" firstAttribute="centerY" secondItem="nFa-SY-r29" secondAttribute="centerY" id="PFI-ta-YID"/>
+                                    <constraint firstItem="3l6-Sc-irt" firstAttribute="height" secondItem="nFa-SY-r29" secondAttribute="height" id="R1u-2Q-jTv"/>
+                                    <constraint firstItem="vDF-Rc-GM1" firstAttribute="leading" secondItem="625-Os-Jkr" secondAttribute="leading" id="Srl-1c-e3l"/>
+                                    <constraint firstItem="kpz-hh-KBB" firstAttribute="top" secondItem="5ee-el-4Q0" secondAttribute="bottom" constant="8" id="UfY-oG-0pT"/>
+                                    <constraint firstItem="vDF-Rc-GM1" firstAttribute="top" secondItem="7eX-kc-a9s" secondAttribute="bottom" constant="34" id="Vpt-5H-xMZ"/>
+                                    <constraint firstItem="YIz-Iw-Bpy" firstAttribute="centerX" secondItem="625-Os-Jkr" secondAttribute="centerX" id="XIq-VL-BNI"/>
+                                    <constraint firstItem="NnT-Ds-qyC" firstAttribute="centerY" secondItem="xPe-iS-FRY" secondAttribute="centerY" id="YXp-0C-zwj"/>
+                                    <constraint firstItem="Lib-xT-SCI" firstAttribute="leading" secondItem="a4A-UW-Uhz" secondAttribute="trailing" constant="8" id="cF1-aN-fO5"/>
+                                    <constraint firstItem="cMv-f3-4fT" firstAttribute="centerY" secondItem="Tgq-dh-ToL" secondAttribute="centerY" id="cQB-yP-9Uw"/>
+                                    <constraint firstAttribute="height" constant="450" id="cjw-TV-EAo"/>
+                                    <constraint firstItem="rwc-EA-9cJ" firstAttribute="leading" secondItem="nFa-SY-r29" secondAttribute="trailing" constant="8" id="cod-Lc-f9J"/>
+                                    <constraint firstItem="kpz-hh-KBB" firstAttribute="leading" secondItem="qGg-OV-G9T" secondAttribute="trailing" constant="8" id="dCU-Vl-6Rc"/>
+                                    <constraint firstItem="XbD-FX-wv2" firstAttribute="centerY" secondItem="5ee-el-4Q0" secondAttribute="centerY" id="efg-Cf-XyT"/>
+                                    <constraint firstItem="YIz-Iw-Bpy" firstAttribute="top" secondItem="vDF-Rc-GM1" secondAttribute="bottom" id="fAe-PC-Dn8"/>
+                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="width" secondItem="NnT-Ds-qyC" secondAttribute="width" multiplier="3:2" id="fGf-oX-dTT"/>
+                                    <constraint firstItem="Tgq-dh-ToL" firstAttribute="top" secondItem="kpz-hh-KBB" secondAttribute="bottom" constant="8" id="g2r-1C-rpZ"/>
+                                    <constraint firstItem="3l6-Sc-irt" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="g7b-QC-Fpd"/>
+                                    <constraint firstItem="xsZ-e8-ZF9" firstAttribute="height" secondItem="nFa-SY-r29" secondAttribute="height" id="kUP-Y6-PaK"/>
+                                    <constraint firstItem="nFa-SY-r29" firstAttribute="width" secondItem="rwc-EA-9cJ" secondAttribute="width" id="l0w-cO-llN"/>
+                                    <constraint firstItem="3l6-Sc-irt" firstAttribute="centerX" secondItem="nFa-SY-r29" secondAttribute="centerX" id="mn5-c5-DfT"/>
+                                    <constraint firstAttribute="trailing" secondItem="vDF-Rc-GM1" secondAttribute="trailing" id="oJe-ZX-F0I"/>
+                                    <constraint firstItem="3l6-Sc-irt" firstAttribute="top" secondItem="nFa-SY-r29" secondAttribute="bottom" constant="8" id="odO-b3-T4G"/>
+                                    <constraint firstItem="5ee-el-4Q0" firstAttribute="leading" secondItem="625-Os-Jkr" secondAttribute="leading" constant="140" id="osD-9m-Yax"/>
+                                    <constraint firstItem="IgV-q0-QEz" firstAttribute="centerX" secondItem="nFa-SY-r29" secondAttribute="centerX" id="p95-CQ-Yct"/>
+                                    <constraint firstItem="xsZ-e8-ZF9" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="sG9-y1-xKz"/>
+                                    <constraint firstItem="a4A-UW-Uhz" firstAttribute="centerY" secondItem="Lib-xT-SCI" secondAttribute="centerY" id="trY-VV-hnK"/>
+                                    <constraint firstItem="nFa-SY-r29" firstAttribute="leading" secondItem="625-Os-Jkr" secondAttribute="leading" id="vpH-Ry-k78"/>
+                                    <constraint firstItem="7eX-kc-a9s" firstAttribute="centerX" secondItem="rwc-EA-9cJ" secondAttribute="centerX" id="wYr-3y-bIH"/>
+                                    <constraint firstItem="Lib-xT-SCI" firstAttribute="top" secondItem="xPe-iS-FRY" secondAttribute="bottom" constant="8" id="xNp-lF-dUE"/>
+                                    <constraint firstItem="7eX-kc-a9s" firstAttribute="height" secondItem="nFa-SY-r29" secondAttribute="height" id="xfV-iH-Vj4"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 active / 7 total" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="38K-ZP-UVg" userLabel="Exchange History">
+                                <rect key="frame" x="177.5" y="318" width="83.5" height="12"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Exchanges:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="R3V-xM-mEE">
+                                <rect key="frame" x="114" y="318" width="55.5" height="12"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="Lib-xT-SCI" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="1bi-qU-sEs"/>
+                            <constraint firstItem="38K-ZP-UVg" firstAttribute="width" secondItem="R3V-xM-mEE" secondAttribute="width" multiplier="3:2" id="4zH-RF-YIj"/>
+                            <constraint firstItem="61l-H5-ee8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="7R4-Bb-q93"/>
+                            <constraint firstItem="nFa-SY-r29" firstAttribute="top" secondItem="38K-ZP-UVg" secondAttribute="bottom" constant="22" id="7ew-gQ-ZTm"/>
+                            <constraint firstItem="Lib-xT-SCI" firstAttribute="leading" secondItem="a4A-UW-Uhz" secondAttribute="trailing" constant="8" id="C83-Ao-lg0"/>
+                            <constraint firstItem="R3V-xM-mEE" firstAttribute="centerY" secondItem="38K-ZP-UVg" secondAttribute="centerY" id="Fo8-t3-YvL"/>
+                            <constraint firstItem="a4A-UW-Uhz" firstAttribute="centerY" secondItem="Lib-xT-SCI" secondAttribute="centerY" id="Rab-45-5Ne"/>
+                            <constraint firstItem="yLA-j5-5k4" firstAttribute="width" secondItem="61l-H5-ee8" secondAttribute="width" id="Tlk-9u-s7m"/>
+                            <constraint firstItem="Lib-xT-SCI" firstAttribute="top" secondItem="xPe-iS-FRY" secondAttribute="bottom" constant="8" id="Xc4-6Y-QC3"/>
+                            <constraint firstItem="38K-ZP-UVg" firstAttribute="leading" secondItem="Lib-xT-SCI" secondAttribute="leading" id="YJy-9V-qLX"/>
+                            <constraint firstItem="yLA-j5-5k4" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="ZrZ-0k-14l"/>
+                            <constraint firstItem="Lib-xT-SCI" firstAttribute="width" secondItem="a4A-UW-Uhz" secondAttribute="width" multiplier="3:2" id="bXG-v7-3gR"/>
+                            <constraint firstItem="38K-ZP-UVg" firstAttribute="leading" secondItem="R3V-xM-mEE" secondAttribute="trailing" constant="8" id="j67-3i-MyO"/>
+                            <constraint firstItem="38K-ZP-UVg" firstAttribute="top" secondItem="Lib-xT-SCI" secondAttribute="bottom" constant="8" id="nmG-W5-vMn"/>
+                            <constraint firstItem="61l-H5-ee8" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="48" id="pAL-Sn-juN"/>
+                            <constraint firstItem="625-Os-Jkr" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="sG7-zG-KyF"/>
+                            <constraint firstItem="61l-H5-ee8" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.8" id="v7B-qC-Ln5"/>
+                            <constraint firstItem="625-Os-Jkr" firstAttribute="top" secondItem="yLA-j5-5k4" secondAttribute="bottom" constant="32" id="vH9-sD-gzh"/>
+                            <constraint firstItem="yLA-j5-5k4" firstAttribute="top" secondItem="61l-H5-ee8" secondAttribute="bottom" constant="14" id="wti-Si-Wp0"/>
+                            <constraint firstItem="625-Os-Jkr" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" multiplier="0.8" id="yit-eU-eQd"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                    </view>
+                    <connections>
+                        <outlet property="beginExchange" destination="IgV-q0-QEz" id="EfK-Rn-XiJ"/>
+                        <outlet property="endGame" destination="YIz-Iw-Bpy" id="XIi-AQ-3vv"/>
+                        <outlet property="endTurn" destination="rwc-EA-9cJ" id="vQG-wr-i4m"/>
+                        <outlet property="endTurnLose" destination="xsZ-e8-ZF9" id="cGM-Jl-kWJ"/>
+                        <outlet property="endTurnWin" destination="7eX-kc-a9s" id="FKV-JV-khz"/>
+                        <outlet property="exchangeHistory" destination="38K-ZP-UVg" id="8ed-mK-vM0"/>
+                        <outlet property="localPlayerOutcome" destination="Tgq-dh-ToL" id="OhB-th-Syk"/>
+                        <outlet property="localPlayerState" destination="kpz-hh-KBB" id="pU0-1Y-Ovm"/>
+                        <outlet property="matchID" destination="vDF-Rc-GM1" id="iqs-av-Wjn"/>
+                        <outlet property="matchMaker" destination="61l-H5-ee8" id="nhr-Xp-MNu"/>
+                        <outlet property="matchState" destination="5ee-el-4Q0" id="eae-Ad-ePS"/>
+                        <outlet property="opponentOutcome" destination="Lib-xT-SCI" id="nwA-Nb-X7X"/>
+                        <outlet property="opponentStatus" destination="xPe-iS-FRY" id="N34-uB-IB4"/>
+                        <outlet property="sendReminder" destination="3l6-Sc-irt" id="UlI-CF-7ek"/>
+                        <outlet property="updateMatch" destination="nFa-SY-r29" id="Vy8-rL-DBn"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="137.18140929535232"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="Storefront Light">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>
