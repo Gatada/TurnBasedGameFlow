@@ -10,15 +10,18 @@ import UIKit
 import GameKit
 
 
+// Register multiple listeners
+// ■ AppDelegate for new turn and activations
+// ■ Match view controller for updates to the current match
+
 /// One controller to rule them all.
 class Simple: UIViewController {
     
     // MARK: - Interface Objects
-    
-    @IBOutlet weak var buildNumber: UILabel!
 
     @IBOutlet weak var matchMaker: UIButton!
-
+    @IBOutlet weak var versionBuild: UILabel!
+    
     @IBOutlet weak var matchState: UILabel!
     @IBOutlet weak var localPlayerState: UILabel!
     @IBOutlet weak var localPlayerOutcome: UILabel!
@@ -34,16 +37,15 @@ class Simple: UIViewController {
     @IBOutlet weak var beginExchange: BackgroundFilledButton!
     @IBOutlet weak var matchID: UILabel!
     
-    @IBOutlet weak var endGame: UIButton!
-    
     // MARK: - Properties
     
     var player: AVAudioPlayer?
 
-    let turnTimeout: TimeInterval = 60 * 2 // 60 * 60 * 24 * 7 // One Week
+    let turnTimeout: TimeInterval = 60 * 60 // 60 * 60 * 24 * 7 // One Week
     let data = Data()
     
-    var alert: UIAlertController?
+    weak var matchMakerController: GKTurnBasedMatchmakerViewController?
+    weak var alert: UIAlertController?
     
     /// Returns `true` if the local player has been authenticated, `false` otherwise.
     public var localPlayerIsAuthenticated: Bool {
@@ -75,10 +77,10 @@ class Simple: UIViewController {
         
         print("""
             
-            Local   : \(GKLocalPlayer.local.teamPlayerID)
-            Opponent: \(opponent?.status == .matching ? "Searching.." : (opponent?.player?.teamPlayerID ?? "n/a"))
+            Local   : \(GKLocalPlayer.local.playerID)
+            Opponent: \(opponent?.status == .matching ? "Searching.." : (opponent?.player?.playerID ?? "n/a"))
             
-            Current : \(match.currentParticipant?.player?.teamPlayerID == GKLocalPlayer.local.teamPlayerID ? "Resolving Turn!" : "Waiting..")
+            Current : \(match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID ? "Resolving Turn!" : "Waiting..")
             
             """)
         
@@ -95,7 +97,7 @@ class Simple: UIViewController {
         authenticatePlayer()
         prepareAudio()
         resetInterface()
-        buildNumber.text = AppDelegate.versionBuild
+        versionBuild.text = AppDelegate.versionBuild
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -127,18 +129,17 @@ class Simple: UIViewController {
         }
 
         // Various states needed to refresh interface.
-        
+
         let gameEnded = match.status == .ended
-        let isResolvingTurn = match.currentParticipant?.player == GKLocalPlayer.local
+        let isResolvingTurn = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
         let opponentOutcomeSet = opponent?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let hasLocalOutcome = localParticipant?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let isMatching = match.status == .matching
-        let canSubmitTurn = isResolvingTurn && !opponentOutcomeSet && !gameEnded
         
-        updateMatch.isEnabled = canSubmitTurn
-        endTurn.isEnabled = canSubmitTurn
-        endTurnWin.isEnabled = canSubmitTurn
-        endTurnLose.isEnabled = canSubmitTurn
+        updateMatch.isEnabled = isResolvingTurn && !opponentOutcomeSet
+        endTurn.isEnabled = isResolvingTurn && !opponentOutcomeSet
+        endTurnWin.isEnabled = isResolvingTurn
+        endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
         
         beginExchange.isEnabled = !gameEnded && !opponentOutcomeSet
 
@@ -179,7 +180,7 @@ class Simple: UIViewController {
         exchangeHistory.text = "\(match.activeExchanges?.count ?? 0) active / \(match.exchanges?.count ?? 0) total"
         
         // Now check if game is over:
-        endGame.isEnabled = opponentOutcomeSet && !gameEnded
+        print("Game is \(gameEnded ? "over" : "active").")
     }
 
     // MARK: - User Interaction
@@ -196,6 +197,7 @@ class Simple: UIViewController {
         
         self.present(matchMaker, animated: true) {
             print("Presented Match Maker")
+            self.matchMakerController = matchMaker
         }
     }
     
@@ -209,10 +211,12 @@ class Simple: UIViewController {
 
         let stringArguments = [String]()
         let recipients = [currentOpponent]
+        let turnTimeout: TimeInterval = 120 // seconds
         
         currentMatch?.sendExchange(to: recipients, data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
             if let receivedError = error {
-                print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A") with error: \(receivedError)")
+                print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
                 return
             }
             
@@ -221,10 +225,10 @@ class Simple: UIViewController {
                 return
             }
             
-            print("Sent exchange \(receivedExchange) for match \(self?.currentMatch?.matchID ?? "N/A")")
+            print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
             self?.refreshInterface()
             
-            self?.presentActionSheetForExchange(receivedExchange)
+            self?.awaitReplyOrCancelExchange(receivedExchange)
         }
     }
     
@@ -242,7 +246,8 @@ class Simple: UIViewController {
         
         currentMatch?.sendReminder(to: [currentOpponent], localizableMessageKey: ":-)", arguments: stringArguments) { [weak self] error in
             if let receivedError = error {
-                print("Failed to send reminder for match \(self?.currentMatch?.matchID ?? "N/A") with error: \(receivedError)")
+                print("Failed to send reminder for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
                 return
             }
 
@@ -255,7 +260,8 @@ class Simple: UIViewController {
         print("Update match \(currentMatch?.matchID ?? "N/A")")
         currentMatch?.saveCurrentTurn(withMatch: data) { [weak self] error in
             if let receivedError = error {
-                print("Failed to update match \(self?.currentMatch?.matchID ?? "N/A") with error: \(receivedError)")
+                print("Failed to update match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
                 return
             }
             
@@ -272,18 +278,23 @@ class Simple: UIViewController {
             return
         }
         
-        currentMatch?.endTurn(withNextParticipants: [currentOpponent], turnTimeout: turnTimeout, match: data) { [weak self] error in
+        // From session #506 at WWDC 2013:
+        // https://developer.apple.com/videos/play/wwdc2013/506/
+        // Last participant on list does not time out.
+        // Include yourself last.
+        
+        guard let localParticipant = localParticipant else {
+            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
+            return
+        }
+        
+        // Localized message to be set at end of turn or game:
+        currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
+        
+        currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
             if let receivedError = error {
-                
-                let code = (receivedError as NSError).code
-                
-                switch code {
-                case 3:
-                    print("Failed to reach server.")
-                default:
-                    print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A") with error: \(receivedError)")
-                }
-                
+                print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
                 return
             }
 
@@ -300,8 +311,17 @@ class Simple: UIViewController {
             return
         }
         
+        guard let currentOpponent = opponent else {
+            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
+            return
+        }
+        
+        if currentOpponent.matchOutcome == .none {
+            currentOpponent.matchOutcome = .lost
+        }
         match.currentParticipant?.matchOutcome = .won
-        endTurnTap(self)
+        
+        endCurrentMatch()
     }
     
     @IBAction func endTurnLossTap(_ sender: Any) {
@@ -312,59 +332,19 @@ class Simple: UIViewController {
             return
         }
         
-        match.currentParticipant?.matchOutcome = .lost
-        endTurnTap(self)
-    }
-    
-    /// Ends the match.
-    ///
-    /// - Important: Before your game calls this method, the matchOutcome property on each
-    /// participant object stored in the participants property must have been set to a value other than
-    /// GKTurnBasedMatch.Outcome.none.
-    @IBAction func endMatchTap(_ sender: Any) {
-        
-        // If current player cannot score more points, the game is over.
-         // This is checked by the previous player, who's outcome is set
-         // according to the score.
-         //
-         // Which means the outcome of the current participant is basically
-         // deduced from the outcome of the opponent.
-        
         guard let currentOpponent = opponent else {
             print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
             return
         }
-         
-         guard let localParticipant = currentMatch?.currentParticipant else {
-             print("Failed to obtain current participant from match \(currentMatch?.matchID ?? "N/A")")
-             return
-         }
-         
-         switch currentOpponent.matchOutcome {
-         case .lost, .timeExpired, .quit:
-             localParticipant.matchOutcome = .won
-         case .tied:
-             localParticipant.matchOutcome = .tied
-         case .won:
-             localParticipant.matchOutcome = .lost
-         default:
-             assertionFailure("Opponent has an unexpected game outcome \"\(stringForPlayerOutcome(currentOpponent.matchOutcome))\"")
-             localParticipant.matchOutcome = .won
-         }
-         
-         print("Local player \(stringForPlayerOutcome(localParticipant.matchOutcome)) the match!")
-         
-        currentMatch?.endMatchInTurn(withMatch: data) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to end game for match \(self?.currentMatch?.matchID ?? "N/A") with error: \(receivedError)")
-                return
-            }
 
-            print("Ended game for match \(self?.currentMatch?.matchID ?? "N/A")")
-            self?.refreshInterface()
+        if currentOpponent.matchOutcome == .none {
+            currentOpponent.matchOutcome = .won
         }
+        match.currentParticipant?.matchOutcome = .lost
+
+        endCurrentMatch()
     }
-    
+        
     // MARK: - Audio
     
     func prepareAudio() {
@@ -460,10 +440,43 @@ class Simple: UIViewController {
     
     // MARK: - Helpers
     
+    func handleError(_ error: Error) {
+        
+        func gamekitError(_ code: Int) {
+            switch code {
+            case 3:
+                presentErrorWithMessage("Error communicating with the server.")
+            default:
+                presentErrorWithMessage("Received error \(code): \(error.localizedDescription)")
+            }
+        }
+        
+        let givenError = error as NSError
+        switch givenError.domain {
+                
+        case "GKErrorDomain":
+            gamekitError(givenError.code)
+        case "NSCocoaErrorDomain":
+            fallthrough
+        default:
+            presentErrorWithMessage("Received error \(givenError.domain) (\(givenError.code)): \(error.localizedDescription)")
+        }
+    }
+    
     func presentErrorWithMessage(_ message: String) {
+        
+        if self.alert != nil {
+            self.dismiss(animated: true) {
+                print("Auto-dismissed already showing alert.")
+            }
+        }
+        
         let alert = UIAlertController(title: "Received Error", message: message, preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(ok)
+        self.alert = alert
+        print(message)
+
         self.present(alert, animated: true) {
             print("Presented error alert")
             self.refreshInterface()
@@ -486,8 +499,6 @@ class Simple: UIViewController {
         endTurnWin.isEnabled = false
         endTurnLose.isEnabled = false
 
-        endGame.isEnabled = false
-
         matchID.text = "No Match Selected"
     }
 
@@ -499,6 +510,41 @@ class Simple: UIViewController {
       return try? JSONSerialization.data(withJSONObject: stringArray, options: [])
     }
     
+    func mergeMatch(_ match: GKTurnBasedMatch, with data: Data, for exchanges: [GKTurnBasedExchange]) {
+        print("Saving merged matchData.")
+        let updatedGameData = data
+        
+        match.saveMergedMatch(updatedGameData, withResolvedExchanges: exchanges) { [weak self] error in
+            if let receivedError = error {
+                print("Failed to save merged data from \(exchanges.count) exchanges:")
+                self?.handleError(receivedError)
+            } else {
+                print("Successfully merged data from \(exchanges.count) exchanges!")
+                self?.refreshInterface()
+            }
+        }
+    }
+    
+    /// Ends the match.
+    ///
+    /// - Important: Before your game calls this method, the matchOutcome property on each
+    /// participant object stored in the participants property must have been set to a value other than
+    /// GKTurnBasedMatch.Outcome.none.
+    func endCurrentMatch() {
+        currentMatch?.endMatchInTurn(withMatch: data) { [weak self] error in
+            if let receivedError = error {
+                print("Failed to end game for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
+                return
+            }
+            print("Ended game for match \(self?.currentMatch?.matchID ?? "N/A")")
+            self?.refreshInterface()
+        }
+    }
+
+
+    
+    // MARK: Exchange Related
     
     func replyToExchange(_ exchange: GKTurnBasedExchange, accepted: Bool) {
         let argument = accepted ? "accepted" : "declined"
@@ -513,24 +559,26 @@ class Simple: UIViewController {
 
         exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: jsonData) { [weak self] error in
             if let receivedError = error {
-                print("Failed to reply to exchange \"\(exchange.message ?? "N/A")\" with error: \(receivedError)")
+                print("Failed to reply to exchange \(exchange.exchangeID):")
+                self?.handleError(receivedError)
                 return
             }
             
-            print("Replied to exchange with message: \(exchange.message ?? "N/A")")
+            print("Replied to exchange \(exchange.exchangeID).")
             self?.refreshInterface()
         }
     }
     
     
-    func presentActionSheetForExchange(_ exchange: GKTurnBasedExchange) {
+    func awaitReplyOrCancelExchange(_ exchange: GKTurnBasedExchange) {
         let alert = UIAlertController(title: "Exchange", message: "Awaiting reply or timeout.", preferredStyle: .actionSheet)
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
             let noArguments = [String]()
             exchange.cancel(withLocalizableMessageKey: ":-/", arguments: noArguments) { [weak self] error in
                 if let receivedError = error {
-                    print("Failed to cancel exchange \(exchange.exchangeID) with error: \(receivedError)")
+                    print("Failed to cancel exchange \(exchange.exchangeID):")
+                    self?.handleError(receivedError)
                 } else {
                     print("Cancelled exchange \(exchange.exchangeID)!")
                 }
@@ -546,21 +594,6 @@ class Simple: UIViewController {
             self.refreshInterface()
         }
     }
-    
-    func mergeMatch(_ match: GKTurnBasedMatch, with data: Data, for exchanges: [GKTurnBasedExchange]) {
-        print("Saving merged matchData.")
-        let updatedGameData = data
-        
-        match.saveMergedMatch(updatedGameData, withResolvedExchanges: exchanges) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to save merged data from \(exchanges.count) exchanges. Receveid error: \(receivedError)")
-            } else {
-                print("Successfully merged data from \(exchanges.count) exchanges!")
-                self?.refreshInterface()
-            }
-        }
-    }
-
 }
 
 
@@ -624,6 +657,34 @@ extension Simple: GKLocalPlayerListener {
 
     func player(_ player: GKPlayer, matchEnded match: GKTurnBasedMatch) {
         print("Match ended")
+
+        guard let localPlayer = match.participants.filter({ $0.player?.playerID == GKLocalPlayer.local.playerID }).first else {
+            print("Local player not found in participants list for match \(match.matchID)")
+            return
+        }
+        
+        guard let opponent = match.participants.filter({ $0.player != GKLocalPlayer.local }).first else {
+            print("Match \(match.matchID) ending without an opponent!")
+            return
+        }
+        
+        print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.alias ?? "N/A" : "None")")
+        
+        let alert = UIAlertController(title: "Match against \(opponent.player?.alias ?? "N/A") ended in a \(stringForPlayerOutcome(localPlayer.matchOutcome))!", message: "Do you want to jump to that match?", preferredStyle: .alert)
+        let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
+            print("Player chose to go to match \(match.matchID)")
+            self?.currentMatch = match
+            self?.refreshInterface()
+        }
+        let ignore = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            print("Player did not want to go to match \(match.matchID)")
+        }
+        
+        alert.addAction(jump)
+        alert.addAction(ignore)
+        
+        self.show(alert, sender: self)
+        self.alert = alert
     }
 
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
@@ -640,12 +701,58 @@ extension Simple: GKLocalPlayerListener {
             // An event is received for updates only when the app is in the
             // foreground (active), but then the didBecomeActive is false.
             
+            currentMatch = match
             play()
+            
+            if matchMaker != nil {
+                dismiss(animated: true, completion: nil)
+            }
+            
+            // Check if there is an ongoing exchange to handle:
+            // Seems like received exhange event is only created on first game
+            // launch after having received the exchange. After that we have
+            // to present the exchange manually.
+            
+            if let exchanges = match.exchanges {
+                for exchange in exchanges {
+                    print(exchange)
+                }
+            }
+            
+            if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
+                self.player(sender, receivedExchangeRequest: exchange, for: match)
+            }
+            
+            
+        } else  if match.matchID == self.currentMatch?.matchID {
+            
+            // In the absence of audio, this is just a simple way to visualize
+            // an game update.
+            
+            currentMatch = match
+            self.view.throb(duration: 0.075, toScale: 1.1)
+        
+        } else {
+        
+            print("Turn event received for another match.")
+                        
+            let alert = UIAlertController(title: "It's your turn in a game against \(opponent?.player?.alias ?? "N/A")!", message: "Do you want to jump to that match?", preferredStyle: .alert)
+            let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
+                print("Player chose to go to match \(match.matchID)")
+                self?.currentMatch = match
+                self?.refreshInterface()
+            }
+            let ignore = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                print("Player did not want to go to match \(match.matchID)")
+            }
+            alert.addAction(jump)
+            alert.addAction(ignore)
+            
+            self.show(alert, sender: self)
+            self.alert = alert
         }
         
         print("\nReceived turn event for match \(match.matchID) \(match.matchData == nil ? "without" : "with \(match.matchData!.count) bytes") data.\nDid become active: \(didBecomeActive)\n")
-        dismiss(animated: true, completion: nil)
-        currentMatch = match
         refreshInterface()
     }
 
@@ -654,6 +761,41 @@ extension Simple: GKLocalPlayerListener {
     }
 
     // MARK: Exchange Related
+    
+    // From: https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/GameKit_Guide/ImplementingaTurn-BasedMatch/ImplementingaTurn-BasedMatch.html
+    //
+    // 1) After an exchange request is created, the players in the recipients array
+    // receive a push notification.
+    // -> Assumed to mean: only the players that should be involved with the exchange
+    // should be part of the recipients array (unlike a regular turn which has
+    // the current player as a fallback).
+    //
+    // 2) Opening the game will present the exchange message.
+    // -> Assumed to mean: Only if the player opens the game before the exchange has
+    // timed out, the exchange will be shown.
+    //
+    // 3) The recipient can choose to respond to the exchange request or let it
+    // time out.
+    // -> Assumed to mean: for the receiver of a request there is no way to
+    // cancel, instead simply let it time out.
+    //
+    // 4) After the exchange is completed, the exchange result is sent to the
+    // current player.
+    // -> Assumed to mean: the completed exchange is automatically sent to
+    // current player. No need to do anything for the creator after the creator
+    // received the exchange replies.
+    //
+    // 5) The exchange is reconciled at the end of the current player’s turn.
+    // -> Assumed to mean: merge data from exchange and game, then end turn as
+    // normal. Alternatively, merge data directly, to let all players see what
+    // has happened.
+    //
+    // From: Quick Help
+    //
+    // An error is returned if any of the participants are inactive.
+    // -> This seems to contradict pt.1 which says a push notification
+    // will be sent to the recipients of the exchange.
+    
 
     func player(_ player: GKPlayer, receivedExchangeReplies replies: [GKTurnBasedExchangeReply], forCompletedExchange exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
         
@@ -668,15 +810,20 @@ extension Simple: GKLocalPlayerListener {
         
         // The exchange is ready for processing: all invitees have responded.
         
-        print("Created by: \(player.teamPlayerID)")
+        print("Local  : \(GKLocalPlayer.local.alias)")
+        print("Creator: \(player.alias)")
+        print("Invitee: \(exchange.recipients.first?.player?.alias ?? "N/A")\n")
         print("Received \(replies.count) exchange replies")
         print("Current player \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.")
-                
+            
+        var count = 0
         for reply in replies {
+            print("Reply \(count):")
             print(reply)
+            count += 1
         }
         
-        if localParticipant?.player == match.currentParticipant {
+        if localParticipant?.player == match.currentParticipant?.player {
             // Let the exchange affect the game by having the
             // the current player merge the updated match data.
             self.mergeMatch(match, with: data, for: [exchange])
@@ -686,15 +833,27 @@ extension Simple: GKLocalPlayerListener {
     }
 
     func player(_ player: GKPlayer, receivedExchangeCancellation exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
-        print("CANCEL: Exchange creator \(exchange.sender.player?.alias ?? "N/A") cancelled the exchange with message: \(exchange.message ?? "N/A")")
-        print(exchange)
+        print("\nExchange creator \(exchange.sender.player?.alias ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
+        if self.alert != nil {
+            self.dismiss(animated: true) {
+                self.alert = nil
+                print("Dismissed cancelled exchange dialog.")
+            }
+        }
+        // Rewind any changes from the exchange?
         refreshInterface()
     }
 
     func player(_ player: GKPlayer, receivedExchangeRequest exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
         
+        // It appears as if I get an error if I try to reply .. too quickly? to a received exchange?
+        // So, instead of replying directly when received - only to receive an error 100% of the times,
+        // I decline the exchange (which will just let the exchange time out), leave the match, load it
+        // again in MatchMaker - which shows the exchange. And now, replying to it works on the replier side..
+        // However, now I get an error on the exchange creator side when receiving the reply.
+        
         let message = exchange.message ?? "Accept the exhange with \(player.displayName)?"
-        print("RECEIVED REQUEST: Received exchange request with message: \"\(message)\"")
+        print("\nReceived exchange \(exchange.exchangeID) from \(player.alias)")
         
         let alert = UIAlertController(title: "Exchange", message: message, preferredStyle: .alert)
         
@@ -704,7 +863,11 @@ extension Simple: GKLocalPlayerListener {
         }
         
         let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self] action in
-            self?.replyToExchange(exchange, accepted: false)
+
+            // I am starting to think that declining an exchange simply
+            // means to let it time out.
+            // self?.replyToExchange(exchange, accepted: false)
+            
             self?.refreshInterface()
         }
         

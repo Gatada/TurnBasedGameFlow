@@ -178,17 +178,6 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YIz-Iw-Bpy">
-                                        <rect key="frame" x="99" y="399" width="102" height="50"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="50" id="5k6-9N-NJy"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="21"/>
-                                        <state key="normal" title="End Match"/>
-                                        <connections>
-                                            <action selector="endMatchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Dqp-Ok-xBl"/>
-                                        </connections>
-                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IgV-q0-QEz" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="294" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -253,7 +242,6 @@
                                     <constraint firstItem="vDF-Rc-GM1" firstAttribute="leading" secondItem="625-Os-Jkr" secondAttribute="leading" id="Srl-1c-e3l"/>
                                     <constraint firstItem="kpz-hh-KBB" firstAttribute="top" secondItem="5ee-el-4Q0" secondAttribute="bottom" constant="8" id="UfY-oG-0pT"/>
                                     <constraint firstItem="vDF-Rc-GM1" firstAttribute="top" secondItem="7eX-kc-a9s" secondAttribute="bottom" constant="34" id="Vpt-5H-xMZ"/>
-                                    <constraint firstItem="YIz-Iw-Bpy" firstAttribute="centerX" secondItem="625-Os-Jkr" secondAttribute="centerX" id="XIq-VL-BNI"/>
                                     <constraint firstItem="NnT-Ds-qyC" firstAttribute="centerY" secondItem="xPe-iS-FRY" secondAttribute="centerY" id="YXp-0C-zwj"/>
                                     <constraint firstItem="Lib-xT-SCI" firstAttribute="leading" secondItem="a4A-UW-Uhz" secondAttribute="trailing" constant="8" id="cF1-aN-fO5"/>
                                     <constraint firstItem="cMv-f3-4fT" firstAttribute="centerY" secondItem="Tgq-dh-ToL" secondAttribute="centerY" id="cQB-yP-9Uw"/>
@@ -261,7 +249,6 @@
                                     <constraint firstItem="rwc-EA-9cJ" firstAttribute="leading" secondItem="nFa-SY-r29" secondAttribute="trailing" constant="8" id="cod-Lc-f9J"/>
                                     <constraint firstItem="kpz-hh-KBB" firstAttribute="leading" secondItem="qGg-OV-G9T" secondAttribute="trailing" constant="8" id="dCU-Vl-6Rc"/>
                                     <constraint firstItem="XbD-FX-wv2" firstAttribute="centerY" secondItem="5ee-el-4Q0" secondAttribute="centerY" id="efg-Cf-XyT"/>
-                                    <constraint firstItem="YIz-Iw-Bpy" firstAttribute="top" secondItem="vDF-Rc-GM1" secondAttribute="bottom" id="fAe-PC-Dn8"/>
                                     <constraint firstItem="xPe-iS-FRY" firstAttribute="width" secondItem="NnT-Ds-qyC" secondAttribute="width" multiplier="3:2" id="fGf-oX-dTT"/>
                                     <constraint firstItem="Tgq-dh-ToL" firstAttribute="top" secondItem="kpz-hh-KBB" secondAttribute="bottom" constant="8" id="g2r-1C-rpZ"/>
                                     <constraint firstItem="3l6-Sc-irt" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="g7b-QC-Fpd"/>
@@ -328,8 +315,6 @@
                     </view>
                     <connections>
                         <outlet property="beginExchange" destination="IgV-q0-QEz" id="EfK-Rn-XiJ"/>
-                        <outlet property="buildNumber" destination="Af5-2O-uj8" id="OYf-fg-dJ9"/>
-                        <outlet property="endGame" destination="YIz-Iw-Bpy" id="XIi-AQ-3vv"/>
                         <outlet property="endTurn" destination="rwc-EA-9cJ" id="vQG-wr-i4m"/>
                         <outlet property="endTurnLose" destination="xsZ-e8-ZF9" id="cGM-Jl-kWJ"/>
                         <outlet property="endTurnWin" destination="7eX-kc-a9s" id="FKV-JV-khz"/>
@@ -343,6 +328,7 @@
                         <outlet property="opponentStatus" destination="xPe-iS-FRY" id="N34-uB-IB4"/>
                         <outlet property="sendReminder" destination="3l6-Sc-irt" id="UlI-CF-7ek"/>
                         <outlet property="updateMatch" destination="nFa-SY-r29" id="Vy8-rL-DBn"/>
+                        <outlet property="versionBuild" destination="Af5-2O-uj8" id="OYf-fg-dJ9"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
