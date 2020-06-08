@@ -48,6 +48,9 @@ class Simple: UIViewController {
         return GKLocalPlayer.local.isAuthenticated
     }
     
+    /// A boolean that is `true` iff authentication returns with an error.
+    public var authenticationCompleted: Bool = false
+    
     var localParticipant: GKTurnBasedParticipant? {
         guard let match = currentMatch else {
             return nil
@@ -101,11 +104,9 @@ class Simple: UIViewController {
     // MARK: - Setup
     
     func setupGameCenter() {
-        
         // Registering the GKLocalPlayerListener to receive all events.
         // This must only be done once.
         GKLocalPlayer.local.register(self)
-        
     }
     
     
@@ -115,7 +116,7 @@ class Simple: UIViewController {
         
         assert(Thread.isMainThread)
         
-        matchMaker.isEnabled = GKLocalPlayer.local.isAuthenticated
+        matchMaker.isEnabled = authenticationCompleted && GKLocalPlayer.local.isAuthenticated
         
         guard let match = currentMatch else {
             resetInterface()
@@ -395,6 +396,24 @@ class Simple: UIViewController {
     
     func authenticatePlayer() {
         GKLocalPlayer.local.authenticateHandler = { [weak self] (controller: UIViewController?, error: Error?) -> Void in
+            
+            guard error == nil else {
+                let code = (error! as NSError).code
+                switch code {
+                case 15:
+                    print("Failed to authenticate local player because application is not recognized by Game Center.")
+                    self?.presentErrorWithMessage("Patience! The app still not recognized by Game Center.")
+                default:
+                    print("Authentication failed with error: \(error!.localizedDescription)")
+                    self?.presentErrorWithMessage("Authentication failed with an error.")
+                }
+                self?.authenticationCompleted = false
+                self?.refreshInterface()
+                return
+            }
+
+            self?.authenticationCompleted = true
+
             if let authenticationController = controller {
                 
                 // The authentication controller is only received once during the
@@ -437,6 +456,16 @@ class Simple: UIViewController {
     }
     
     // MARK: - Helpers
+    
+    func presentErrorWithMessage(_ message: String) {
+        let alert = UIAlertController(title: "Received Error", message: message, preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(ok)
+        self.present(alert, animated: true) {
+            print("Presented error alert")
+            self.refreshInterface()
+        }
+    }
     
     func resetInterface() {
         matchState.text = " "
@@ -644,13 +673,17 @@ extension Simple: GKLocalPlayerListener {
             print(reply)
         }
         
-        // Let the exchange data affect the game.
-        self.mergeMatch(match, with: data, for: [exchange])
+        if localParticipant?.player == match.currentParticipant {
+            // Let the exchange affect the game by having the
+            // the current player merge the updated match data.
+            self.mergeMatch(match, with: data, for: [exchange])
+        }
+        
         self.refreshInterface()
     }
 
     func player(_ player: GKPlayer, receivedExchangeCancellation exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
-        print("CANCEL: Exchange creator cancelled the exchange with message: \(exchange.message ?? "N/A")")
+        print("CANCEL: Exchange creator \(exchange.sender.player?.alias ?? "N/A") cancelled the exchange with message: \(exchange.message ?? "N/A")")
         print(exchange)
         refreshInterface()
     }

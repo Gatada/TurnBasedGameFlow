@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0421CCA7248E4FFF006D1B3E /* GKMessageImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 0421CCA6248E4FFF006D1B3E /* GKMessageImage.png */; };
 		04D3A9A3248B996400AE9325 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D3A9A2248B996400AE9325 /* AppDelegate.swift */; };
 		04D3A9AC248B996500AE9325 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04D3A9AB248B996500AE9325 /* Assets.xcassets */; };
 		04D3A9AF248B996500AE9325 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04D3A9AD248B996500AE9325 /* LaunchScreen.storyboard */; };
@@ -20,6 +21,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0421CCA6248E4FFF006D1B3E /* GKMessageImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GKMessageImage.png; sourceTree = "<group>"; };
+		0421CCA8248E507B006D1B3E /* GKInvite.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GKInvite.caf; sourceTree = "<group>"; };
 		04D3A99F248B996400AE9325 /* Game Flow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Game Flow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04D3A9A2248B996400AE9325 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		04D3A9AB248B996500AE9325 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -46,6 +49,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0421CCA9248E508C006D1B3E /* GameKit */ = {
+			isa = PBXGroup;
+			children = (
+				0421CCA6248E4FFF006D1B3E /* GKMessageImage.png */,
+				0421CCA8248E507B006D1B3E /* GKInvite.caf */,
+			);
+			path = GameKit;
+			sourceTree = "<group>";
+		};
 		04D3A996248B996400AE9325 = {
 			isa = PBXGroup;
 			children = (
@@ -113,6 +125,7 @@
 		04D3A9C6248BA3AA00AE9325 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0421CCA9248E508C006D1B3E /* GameKit */,
 				04D3A9B0248B996500AE9325 /* Info.plist */,
 				04D3A9B7248B99A000AE9325 /* Simple.caf */,
 				04D3A9AB248B996500AE9325 /* Assets.xcassets */,
@@ -135,9 +148,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04D3A9B3248B996500AE9325 /* Build configuration list for PBXNativeTarget "TurnBasedGameFlow" */;
 			buildPhases = (
+				0421CCAA248E6BE8006D1B3E /* Revert Build Number */,
 				04D3A99B248B996400AE9325 /* Sources */,
 				04D3A99C248B996400AE9325 /* Frameworks */,
 				04D3A99D248B996400AE9325 /* Resources */,
+				0421CCAB248E6C90006D1B3E /* Revert Build Number */,
 			);
 			buildRules = (
 			);
@@ -189,11 +204,51 @@
 				04D3A9BB248B9A2F00AE9325 /* Simple.caf in Resources */,
 				04D3A9AF248B996500AE9325 /* LaunchScreen.storyboard in Resources */,
 				04D3A9AC248B996500AE9325 /* Assets.xcassets in Resources */,
+				0421CCA7248E4FFF006D1B3E /* GKMessageImage.png in Resources */,
 				04D3A9BA248B9A2C00AE9325 /* Simple.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0421CCAA248E6BE8006D1B3E /* Revert Build Number */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Revert Build Number";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Set the build number to the count of Git commits\nbuildNumber=$(git log --oneline $(git describe --tags --abbrev=0).. | wc -l)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${INFOPLIST_FILE}\"\nprintf \"\\n-----\\nUpdated plist ${INFOPLIST_FILE} with build number: $buildNumber\\n-----\\n\\n\"\n";
+		};
+		0421CCAB248E6C90006D1B3E /* Revert Build Number */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Revert Build Number";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Restore build number to a static and descriptive string\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion •••\\ AUTOMATED\\ IN\\ BUILD\\ PHASES\" \"${INFOPLIST_FILE}\"\nprintf \"\\n--------\\nReset ${INFOPLIST_FILE} to avoid repos clutter!\\n--------\\n\\n\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		04D3A99B248B996400AE9325 /* Sources */ = {
