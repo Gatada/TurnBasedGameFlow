@@ -1,6 +1,6 @@
 //
 //  UIApplicationDelegate.swift
-//  TugOfWar
+//  JBits
 //
 //  Created by Basberg, Johan on 22/03/2019.
 //  Copyright © 2019 Basberg, Johan. All rights reserved.

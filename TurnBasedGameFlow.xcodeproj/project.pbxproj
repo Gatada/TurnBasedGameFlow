@@ -151,7 +151,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04D3A9B3248B996500AE9325 /* Build configuration list for PBXNativeTarget "TurnBasedGameFlow" */;
 			buildPhases = (
-				0421CCAA248E6BE8006D1B3E /* Revert Build Number */,
+				0421CCAA248E6BE8006D1B3E /* Update Build Number */,
 				04D3A99B248B996400AE9325 /* Sources */,
 				04D3A99C248B996400AE9325 /* Frameworks */,
 				04D3A99D248B996400AE9325 /* Resources */,
@@ -215,32 +215,33 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0421CCAA248E6BE8006D1B3E /* Revert Build Number */ = {
+		0421CCAA248E6BE8006D1B3E /* Update Build Number */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
 			);
-			name = "Revert Build Number";
+			name = "Update Build Number";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Set the build number to the count of Git commits\nbuildNumber=$(git log --oneline $(git describe --tags --abbrev=0).. | wc -l)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${INFOPLIST_FILE}\"\nprintf \"\\n-----\\nUpdated plist ${INFOPLIST_FILE} with build number: $buildNumber\\n-----\\n\\n\"\n";
+			shellScript = "# Set the build number to the count of Git commits\n# since more recently created tag.\nbuildNumber=$(git log --oneline $(git describe --tags --abbrev=0).. | wc -l)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${INFOPLIST_FILE}\"\nprintf \"\\n-----\\nUpdated plist ${INFOPLIST_FILE} with build number: $buildNumber\\n-----\\n\\n\"\n";
 		};
 		0421CCAB248E6C90006D1B3E /* Revert Build Number */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = "Revert Build Number";
 			outputFileListPaths = (
@@ -249,7 +250,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Restore build number to a static and descriptive string\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion •••\\ AUTOMATED\\ IN\\ BUILD\\ PHASES\" \"${INFOPLIST_FILE}\"\nprintf \"\\n--------\\nReset ${INFOPLIST_FILE} to avoid repos clutter!\\n--------\\n\\n\"\n";
+			shellScript = "# Restore build number to a static and descriptive string\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion •••\\ AUTOMATED\\ IN\\ BUILD\\ PHASES\" \"${INFOPLIST_FILE}\"\nprintf \"\\n--------\\nReset bundle version in ${INFOPLIST_FILE} to avoid repos clutter!\\n--------\\n\\n\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -331,7 +332,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -385,7 +386,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -400,6 +401,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = xxx;
 				DEVELOPMENT_TEAM = 94DYCUKKGX;
 				INFOPLIST_FILE = "$(SRCROOT)/Project/Library/Resources/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
@@ -419,6 +421,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = xxx;
 				DEVELOPMENT_TEAM = 94DYCUKKGX;
 				INFOPLIST_FILE = "$(SRCROOT)/Project/Library/Resources/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
