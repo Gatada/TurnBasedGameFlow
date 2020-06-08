@@ -14,6 +14,8 @@ import GameKit
 class Simple: UIViewController {
     
     // MARK: - Interface Objects
+    
+    @IBOutlet weak var buildNumber: UILabel!
 
     @IBOutlet weak var matchMaker: UIButton!
 
@@ -93,6 +95,7 @@ class Simple: UIViewController {
         authenticatePlayer()
         prepareAudio()
         resetInterface()
+        buildNumber.text = AppDelegate.versionBuild
     }
     
     override func viewDidAppear(_ animated: Bool) {

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0421CCA7248E4FFF006D1B3E /* GKMessageImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 0421CCA6248E4FFF006D1B3E /* GKMessageImage.png */; };
+		0421CCAD248E6E61006D1B3E /* UIApplicationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */; };
 		04D3A9A3248B996400AE9325 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D3A9A2248B996400AE9325 /* AppDelegate.swift */; };
 		04D3A9AC248B996500AE9325 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04D3A9AB248B996500AE9325 /* Assets.xcassets */; };
 		04D3A9AF248B996500AE9325 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 04D3A9AD248B996500AE9325 /* LaunchScreen.storyboard */; };
@@ -23,6 +24,7 @@
 /* Begin PBXFileReference section */
 		0421CCA6248E4FFF006D1B3E /* GKMessageImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GKMessageImage.png; sourceTree = "<group>"; };
 		0421CCA8248E507B006D1B3E /* GKInvite.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GKInvite.caf; sourceTree = "<group>"; };
+		0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationDelegate.swift; sourceTree = "<group>"; };
 		04D3A99F248B996400AE9325 /* Game Flow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Game Flow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04D3A9A2248B996400AE9325 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		04D3A9AB248B996500AE9325 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		04D3A9C2248BA36300AE9325 /* Decorator */ = {
 			isa = PBXGroup;
 			children = (
+				0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */,
 				04D3A9BC248B9AA600AE9325 /* UIColor.swift */,
 			);
 			path = Decorator;
@@ -260,6 +263,7 @@
 				04D3A9A3248B996400AE9325 /* AppDelegate.swift in Sources */,
 				04D3A9BD248B9AA600AE9325 /* UIColor.swift in Sources */,
 				04D3A9B9248B99A000AE9325 /* Simple.swift in Sources */,
+				0421CCAD248E6E61006D1B3E /* UIApplicationDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,12 +12,12 @@
         <!--Simple-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="Simple" customModule="TurnBasedGameFlow" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="Simple" customModule="Game_Flow" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="61l-H5-ee8" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="61l-H5-ee8" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                 <rect key="frame" x="37.5" y="48" width="300" height="50"/>
                                 <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
@@ -51,7 +51,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xsZ-e8-ZF9" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xsZ-e8-ZF9" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="154" y="237" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Turn Lose">
@@ -79,7 +79,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFa-SY-r29" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFa-SY-r29" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="179" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
@@ -110,7 +110,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwc-EA-9cJ" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwc-EA-9cJ" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="154" y="179" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Turn">
@@ -138,7 +138,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eX-kc-a9s" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eX-kc-a9s" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="154" y="294" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemPurpleColor" red="0.68627450980000004" green="0.32156862749999998" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Turn Win">
@@ -189,7 +189,7 @@
                                             <action selector="endMatchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Dqp-Ok-xBl"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IgV-q0-QEz" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IgV-q0-QEz" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="294" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="Begin Exchange">
@@ -205,7 +205,7 @@
                                             <action selector="beginExchangeTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Mdp-Sn-i2K"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3l6-Sc-irt" customClass="BackgroundFilledButton" customModule="TurnBasedGameFlow" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3l6-Sc-irt" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="237" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="Send Reminder">
@@ -292,6 +292,12 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Build Number" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Af5-2O-uj8">
+                                <rect key="frame" x="154.5" y="647" width="66" height="12"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -303,10 +309,12 @@
                             <constraint firstItem="R3V-xM-mEE" firstAttribute="centerY" secondItem="38K-ZP-UVg" secondAttribute="centerY" id="Fo8-t3-YvL"/>
                             <constraint firstItem="a4A-UW-Uhz" firstAttribute="centerY" secondItem="Lib-xT-SCI" secondAttribute="centerY" id="Rab-45-5Ne"/>
                             <constraint firstItem="yLA-j5-5k4" firstAttribute="width" secondItem="61l-H5-ee8" secondAttribute="width" id="Tlk-9u-s7m"/>
+                            <constraint firstItem="Af5-2O-uj8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="TrO-HX-MBi"/>
                             <constraint firstItem="Lib-xT-SCI" firstAttribute="top" secondItem="xPe-iS-FRY" secondAttribute="bottom" constant="8" id="Xc4-6Y-QC3"/>
                             <constraint firstItem="38K-ZP-UVg" firstAttribute="leading" secondItem="Lib-xT-SCI" secondAttribute="leading" id="YJy-9V-qLX"/>
                             <constraint firstItem="yLA-j5-5k4" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="ZrZ-0k-14l"/>
                             <constraint firstItem="Lib-xT-SCI" firstAttribute="width" secondItem="a4A-UW-Uhz" secondAttribute="width" multiplier="3:2" id="bXG-v7-3gR"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="Af5-2O-uj8" secondAttribute="bottom" constant="8" id="gd8-bn-hlS"/>
                             <constraint firstItem="38K-ZP-UVg" firstAttribute="leading" secondItem="R3V-xM-mEE" secondAttribute="trailing" constant="8" id="j67-3i-MyO"/>
                             <constraint firstItem="38K-ZP-UVg" firstAttribute="top" secondItem="Lib-xT-SCI" secondAttribute="bottom" constant="8" id="nmG-W5-vMn"/>
                             <constraint firstItem="61l-H5-ee8" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="48" id="pAL-Sn-juN"/>
@@ -320,6 +328,7 @@
                     </view>
                     <connections>
                         <outlet property="beginExchange" destination="IgV-q0-QEz" id="EfK-Rn-XiJ"/>
+                        <outlet property="buildNumber" destination="Af5-2O-uj8" id="OYf-fg-dJ9"/>
                         <outlet property="endGame" destination="YIz-Iw-Bpy" id="XIi-AQ-3vv"/>
                         <outlet property="endTurn" destination="rwc-EA-9cJ" id="vQG-wr-i4m"/>
                         <outlet property="endTurnLose" destination="xsZ-e8-ZF9" id="cGM-Jl-kWJ"/>
