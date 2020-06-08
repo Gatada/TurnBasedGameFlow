@@ -743,6 +743,10 @@ extension Simple: GKLocalPlayerListener {
         
             print("Turn event received for another match.")
                         
+            let opponent = match.participants.filter { (player) -> Bool in
+                player.player != GKLocalPlayer.local
+            }.first
+            
             let alert = UIAlertController(title: "It's your turn in a game against \(opponent?.player?.alias ?? "N/A")!", message: "Do you want to jump to that match?", preferredStyle: .alert)
             let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
                 print("Player chose to go to match \(match.matchID)")
