@@ -271,55 +271,34 @@ class Simple: UIViewController {
     }
     
     @IBAction func endTurnTap(_ sender: Any) {
-        
-        func endTurn() {
-            
-            guard let currentOpponent = opponent else {
-                print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-                return
-            }
-            
-            // From session #506 at WWDC 2013:
-            // https://developer.apple.com/videos/play/wwdc2013/506/
-            // Last participant on list does not time out.
-            // Include yourself last.
-            
-            guard let localParticipant = localParticipant else {
-                print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-                return
-            }
-            
-            // Localized message to be set at end of turn or game:
-            currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
-            
-            currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
-                if let receivedError = error {
-                    print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                    self?.handleError(receivedError)
-                    return
-                }
                 
-                print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
-                self?.refreshInterface()
-            }
-        }
-        
-        guard let match = currentMatch else {
-            // No match selected
-            assertionFailure("No match is selected, all buttons should be disabled.")
+        guard let currentOpponent = opponent else {
+            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
             return
         }
         
-        print("End turn of match \(currentMatch?.matchID ?? "N/A")")
+        // From session #506 at WWDC 2013:
+        // https://developer.apple.com/videos/play/wwdc2013/506/
+        // Last participant on list does not time out.
+        // Include yourself last.
         
-        if let unresolvedExchanges = currentMatch?.activeExchanges {
-            mergeMatch(match, with: data, for: unresolvedExchanges) { error in
-                print(error == nil ? "Resolved active exchanges." : "Failed to resolve active exchanges!")
-                endTurn()
+        guard let localParticipant = localParticipant else {
+            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
+            return
+        }
+        
+        // Localized message to be set at end of turn or game:
+        currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
+        
+        currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
+            if let receivedError = error {
+                print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
+                return
             }
             
-        } else {
-            endTurn()
+            print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
+            self?.refreshInterface()
         }
     }
     
@@ -743,6 +722,12 @@ extension Simple: GKLocalPlayerListener {
             
             if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
                 self.player(sender, receivedExchangeRequest: exchange, for: match)
+            }
+            
+            if let unresolvedExchanges = match.activeExchanges {
+                mergeMatch(match, with: data, for: unresolvedExchanges) { error in
+                    print(error == nil ? "Resolved active exchanges." : "Failed to resolve active exchanges!")
+                }
             }
             
             
