@@ -271,35 +271,55 @@ class Simple: UIViewController {
     }
     
     @IBAction func endTurnTap(_ sender: Any) {
-        print("End turn of match \(currentMatch?.matchID ?? "N/A")")
         
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
-        // From session #506 at WWDC 2013:
-        // https://developer.apple.com/videos/play/wwdc2013/506/
-        // Last participant on list does not time out.
-        // Include yourself last.
-        
-        guard let localParticipant = localParticipant else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
-        // Localized message to be set at end of turn or game:
-        currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
-        
-        currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                self?.handleError(receivedError)
+        func endTurn() {
+            
+            guard let currentOpponent = opponent else {
+                print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
                 return
             }
-
-            print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
-            self?.refreshInterface()
+            
+            // From session #506 at WWDC 2013:
+            // https://developer.apple.com/videos/play/wwdc2013/506/
+            // Last participant on list does not time out.
+            // Include yourself last.
+            
+            guard let localParticipant = localParticipant else {
+                print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
+                return
+            }
+            
+            // Localized message to be set at end of turn or game:
+            currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
+            
+            currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
+                if let receivedError = error {
+                    print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                    self?.handleError(receivedError)
+                    return
+                }
+                
+                print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
+                self?.refreshInterface()
+            }
+        }
+        
+        guard let match = currentMatch else {
+            // No match selected
+            assertionFailure("No match is selected, all buttons should be disabled.")
+            return
+        }
+        
+        print("End turn of match \(currentMatch?.matchID ?? "N/A")")
+        
+        if let unresolvedExchanges = currentMatch?.activeExchanges {
+            mergeMatch(match, with: data, for: unresolvedExchanges) { error in
+                print(error == nil ? "Resolved active exchanges." : "Failed to resolve active exchanges!")
+                endTurn()
+            }
+            
+        } else {
+            endTurn()
         }
     }
     
@@ -510,7 +530,7 @@ class Simple: UIViewController {
       return try? JSONSerialization.data(withJSONObject: stringArray, options: [])
     }
     
-    func mergeMatch(_ match: GKTurnBasedMatch, with data: Data, for exchanges: [GKTurnBasedExchange]) {
+    func mergeMatch(_ match: GKTurnBasedMatch, with data: Data, for exchanges: [GKTurnBasedExchange], closure: ((Error?)->Void)?) {
         print("Saving merged matchData.")
         let updatedGameData = data
         
@@ -518,9 +538,11 @@ class Simple: UIViewController {
             if let receivedError = error {
                 print("Failed to save merged data from \(exchanges.count) exchanges:")
                 self?.handleError(receivedError)
+                closure?(receivedError)
             } else {
                 print("Successfully merged data from \(exchanges.count) exchanges!")
                 self?.refreshInterface()
+                closure?(nil)
             }
         }
     }
@@ -811,6 +833,7 @@ extension Simple: GKLocalPlayerListener {
         
         // The exchange is ready for processing: all invitees have responded.
         
+        print("Status : \(stringForExchangeStatus(exchange.status))")
         print("Local  : \(GKLocalPlayer.local.alias)")
         print("Creator: \(player.alias)")
         print("Invitee: \(exchange.recipients.first?.player?.alias ?? "N/A")\n")
@@ -824,7 +847,7 @@ extension Simple: GKLocalPlayerListener {
             count += 1
         }
         
-        self.mergeMatch(match, with: data, for: [exchange])
+        self.mergeMatch(match, with: data, for: [exchange], closure: nil)
         self.refreshInterface()
     }
 

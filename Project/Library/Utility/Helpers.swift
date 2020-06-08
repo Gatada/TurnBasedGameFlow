@@ -9,6 +9,25 @@
 import Foundation
 import GameKit
 
+
+func stringForExchangeStatus(_ status: GKTurnBasedExchangeStatus) -> String {
+    switch status {
+    case .unknown:
+        return "Unknown"
+    case .active:
+        return "Active"
+    case .complete:
+        return "Complete"
+    case .resolved:
+        return "Resolved"
+    case .canceled:
+        return "Canceled"
+    default:
+        return "Status \(status)"
+    }
+    
+}
+
 func stringForMatchStatus(_ status: GKTurnBasedMatch.Status) -> String {
     switch status {
     case .ended:
