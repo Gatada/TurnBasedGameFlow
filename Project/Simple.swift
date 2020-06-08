@@ -800,7 +800,8 @@ extension Simple: GKLocalPlayerListener {
     func player(_ player: GKPlayer, receivedExchangeReplies replies: [GKTurnBasedExchangeReply], forCompletedExchange exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
         
         print("RECEIVED REPLIES: Exchange \(exchange.exchangeID) completed.")
-        
+        assert(localParticipant?.player == match.currentParticipant?.player, "A player other than the current participant received exchange replies.")
+
         if alert != nil {
             self.dismiss(animated: true) {
                 print("Dismissed alert")
@@ -823,12 +824,7 @@ extension Simple: GKLocalPlayerListener {
             count += 1
         }
         
-        if localParticipant?.player == match.currentParticipant?.player {
-            // Let the exchange affect the game by having the
-            // the current player merge the updated match data.
-            self.mergeMatch(match, with: data, for: [exchange])
-        }
-        
+        self.mergeMatch(match, with: data, for: [exchange])
         self.refreshInterface()
     }
 
