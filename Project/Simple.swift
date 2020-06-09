@@ -141,7 +141,7 @@ class Simple: UIViewController {
         endTurnWin.isEnabled = isResolvingTurn
         endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
         
-        beginExchange.isEnabled = !gameEnded && !opponentOutcomeSet
+        beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
 
         // Only enable reminders while out of turn.
         let canSendReminder = !(gameEnded || isMatching || isResolvingTurn || hasLocalOutcome)
