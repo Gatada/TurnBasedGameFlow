@@ -258,10 +258,10 @@ class Simple: UIViewController {
             }
         }
 
-        let alert = UIAlertController(title: "Exchange with whom?", message: "Pick the player to trade with.", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
         for participant in match.participants {
             
-            guard participant.status != .matching else {
+            guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
                 // Not yet a real participant to trade with.
                 continue
             }
