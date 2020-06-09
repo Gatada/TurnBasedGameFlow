@@ -782,6 +782,13 @@ extension Simple: GKLocalPlayerListener {
 
     func player(_ player: GKPlayer, matchEnded match: GKTurnBasedMatch) {
         print("Match ended")
+        
+        guard self.currentMatch != match else {
+            // Player is already on the board.
+            // Just update the UI
+            refreshInterface()
+            return
+        }
 
         guard let localPlayer = match.participants.filter({ $0.player?.playerID == GKLocalPlayer.local.playerID }).first else {
             print("Local player not found in participants list for match \(match.matchID)")
