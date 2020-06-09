@@ -532,9 +532,9 @@ class Simple: UIViewController {
     private func prepareMatchRequest(withInviteMessage message: String? = nil, usingAutomatch: Bool) -> GKMatchRequest {
         
         let request = GKMatchRequest()
-        request.minPlayers = 2
-        request.maxPlayers = 2
-        request.defaultNumberOfPlayers = 2
+        request.minPlayers = 3
+        request.maxPlayers = 3
+        request.defaultNumberOfPlayers = 3
         request.inviteMessage = message ?? "Would you like to play?"
         
         if #available(iOS 13.0, *) {
@@ -663,14 +663,14 @@ class Simple: UIViewController {
         let argument = accepted ? "accepted" : "declined"
         let arguments = [argument]
         
-        guard let jsonData = stringArrayToData(stringArray: arguments) else {
+        guard let exchangeResponse = stringArrayToData(stringArray: arguments) else {
             assertionFailure("Failed to encode arguments to data for exchange reply.")
             return
         }
         
         let stringArguments = [String]()
 
-        exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: jsonData) { [weak self] error in
+        exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: exchangeResponse) { [weak self] error in
             if let receivedError = error {
                 print("Failed to reply to exchange \(exchange.exchangeID):")
                 self?.handleError(receivedError)
@@ -949,7 +949,13 @@ extension Simple: GKLocalPlayerListener {
         printDetailsForExchange(exchange, for: match, with: player)
             
         for reply in replies {
-            print("Reply: \(reply.message ?? "")")
+            guard let exchangeResponse = reply.data else {
+                print("Reply has no data!")
+                continue
+            }
+            if let array = dataToStringArray(data: exchangeResponse), let response = array.first {
+                print("Exchange was \(response)!")
+            }
         }
 
         self.refreshInterface()
