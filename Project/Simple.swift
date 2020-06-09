@@ -878,12 +878,15 @@ extension Simple: GKLocalPlayerListener {
 
         let nextUp = nextParticipantsForMatch(match, didQuit: true)
         
+        // This could be anything, based on game logic:
+        let outcome = GKTurnBasedMatch.Outcome.quit
+        
         // Pass the match to the next player by calling
-        match.participantQuitInTurn(with: .quit, nextParticipants: nextUp, turnTimeout: turnTimeout, match: data) { [weak self] error in
+        match.participantQuitInTurn(with: outcome, nextParticipants: nextUp, turnTimeout: turnTimeout, match: data) { [weak self] error in
             if let receivedError = error {
-                print("Failed to quit match \(match.matchID) with error: \(receivedError)")
+                print("Failed to leave match \(match.matchID) with error: \(receivedError)")
             } else {
-                print("Match \(match.matchID) was successfully quit by local player.")
+                print("Match \(match.matchID) was successfully left by local player.")
                 self?.refreshInterface()
             }
         }
