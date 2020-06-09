@@ -135,11 +135,12 @@ class Simple: UIViewController {
         let opponentOutcomeSet = opponent?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let hasLocalOutcome = localParticipant?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let isMatching = match.status == .matching
+        let waitingForExchangeCompletion = (match.activeExchanges ?? [GKTurnBasedExchange]()).count > 0
         
         updateMatch.isEnabled = isResolvingTurn && !opponentOutcomeSet
-        endTurn.isEnabled = isResolvingTurn && !opponentOutcomeSet
-        endTurnWin.isEnabled = isResolvingTurn
-        endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
+        endTurn.isEnabled = isResolvingTurn && !opponentOutcomeSet && !waitingForExchangeCompletion
+        endTurnWin.isEnabled = isResolvingTurn && !waitingForExchangeCompletion
+        endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet && !waitingForExchangeCompletion
         
         beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
 
