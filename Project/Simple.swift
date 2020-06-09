@@ -869,7 +869,7 @@ extension Simple: GKLocalPlayerListener {
         // However, now I get an error on the exchange creator side when receiving the reply.
         
         let message = exchange.message ?? "Accept the exhange with \(player.displayName)?"
-        print("\nReceived exchange \(exchange.exchangeID) from \(player.alias)")
+        print("\nReceived exchange \(exchange.exchangeID) from \(player.alias) for match \(match.matchID)")
         
         let alert = UIAlertController(title: "Exchange", message: message, preferredStyle: .alert)
         
