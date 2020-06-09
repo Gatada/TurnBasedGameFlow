@@ -280,16 +280,21 @@ class Simple: UIViewController {
     
     /// A reminder can only be sent when the recipient is not already interacting with the related game.
     @IBAction func sendReminderTap(_ sender: Any) {
-        print("Send reminder for match \(currentMatch?.matchID ?? "N/A")")
         
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
+        guard let match = currentMatch else {
+            print("No match set for sending a reminder.")
             return
         }
         
-        let stringArguments = [String]()
+        print("Send reminder for match \(match.matchID)")
         
-        currentMatch?.sendReminder(to: [currentOpponent], localizableMessageKey: ":-)", arguments: stringArguments) { [weak self] error in
+        let stringArguments = [String]()
+        guard let sleepingParticipant = match.currentParticipant else {
+            print("No current participant was found for the match!")
+            return
+        }
+                
+        currentMatch?.sendReminder(to: [sleepingParticipant], localizableMessageKey: "Want to make a move?", arguments: stringArguments) { [weak self] error in
             if let receivedError = error {
                 print("Failed to send reminder for match \(self?.currentMatch?.matchID ?? "N/A"):")
                 self?.handleError(receivedError)
@@ -891,37 +896,54 @@ extension Simple: GKLocalPlayerListener {
     func player(_ player: GKPlayer, matchEnded match: GKTurnBasedMatch) {
         print("Match ended")
         
-        guard self.currentMatch != match else {
-            // Player is already on the board.
-            // Just update the UI
-            refreshInterface()
-            return
-        }
+        let alreadyViewingMatch = self.currentMatch?.matchID == match.matchID
 
         guard let localPlayer = match.participants.filter({ $0.player?.playerID == GKLocalPlayer.local.playerID }).first else {
             print("Local player not found in participants list for match \(match.matchID)")
             return
         }
-        
-        guard let opponent = match.participants.filter({ $0.player != GKLocalPlayer.local }).first else {
-            print("Match \(match.matchID) ending without an opponent!")
-            return
+
+        var opponents = ""
+        var comma = ""
+        let opponentCount = match.participants.count - 1
+        var nameCount = 0
+        for participant in match.participants {
+            guard participant.player != GKLocalPlayer.local else {
+                continue
+            }
+            
+            if let name = participant.player?.displayName {
+                opponents += comma + name
+            }
+
+            nameCount += 1
+            if nameCount == opponentCount - 1 {
+                comma = " and "
+            } else {
+                comma = ", "
+            }
         }
         
-        print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.displayName ?? "N/A" : "None")")
+        let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome).lowercased()) in a match against \(opponents)!", message: "Do you want to see the result now?", preferredStyle: .alert)
         
-        let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome)) a Match against \(opponent.player?.displayName ?? "N/A")!", message: "Do you want to see the result now?", preferredStyle: .alert)
-        let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
-            print("Player chose to go to match \(match.matchID)")
-            self?.currentMatch = match
-            self?.refreshInterface()
+        if alreadyViewingMatch {
+            let ok = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+            alert.addAction(ok)
+            alert.message = ""
+            
+        } else {
+            let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
+                print("Player chose to go to match \(match.matchID)")
+                self?.currentMatch = match
+                self?.refreshInterface()
+            }
+            let ignore = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                print("Player did not want to go to match \(match.matchID)")
+            }
+            
+            alert.addAction(jump)
+            alert.addAction(ignore)
         }
-        let ignore = UIAlertAction(title: "Cancel", style: .cancel) { _ in
-            print("Player did not want to go to match \(match.matchID)")
-        }
-        
-        alert.addAction(jump)
-        alert.addAction(ignore)
         
         self.present(alert, animated: true)
         self.alert = alert
