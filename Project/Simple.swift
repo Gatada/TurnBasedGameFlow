@@ -604,6 +604,17 @@ class Simple: UIViewController {
             }
         }
     }
+    
+    func printDetailsForExchange(_ exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch, with player: GKPlayer) {
+        print("\nREPLIES FOR EXCHANGE \(exchange.exchangeID)")
+        print("Match   : \(match.matchID) is \(stringForMatchStatus(match.status))")
+        print("Exchange: \(stringForExchangeStatus(exchange.status))")
+        print("Local   : \(GKLocalPlayer.local.alias)")
+        print("Creator : \(player.alias)")
+        print("Invitee : \(exchange.recipients.first?.player?.alias ?? "N/A")")
+        print("Replies : \(exchange.replies?.count ?? 0)")
+        print("Resolve : \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.\n")
+    }
 }
 
 
@@ -819,8 +830,6 @@ extension Simple: GKLocalPlayerListener {
         // Hmm... Is this simply received to update the game on the client side?
         // As merging data from here seems to always result in an error.
         
-        print("\nREPLIES FOR EXCHANGE \(exchange.exchangeID)")
-        
         if alert != nil {
             self.dismiss(animated: true) {
                 print("Dismissed alert")
@@ -829,14 +838,7 @@ extension Simple: GKLocalPlayerListener {
         }
         
         // The exchange is ready for processing: all invitees have responded.
-        
-        print("Match   : \(match.matchID) is \(stringForMatchStatus(match.status))")
-        print("Exchange: \(stringForExchangeStatus(exchange.status))")
-        print("Local   : \(GKLocalPlayer.local.alias)")
-        print("Creator : \(player.alias)")
-        print("Invitee : \(exchange.recipients.first?.player?.alias ?? "N/A")")
-        print("Replies : \(replies.count)")
-        print("Resolve : \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.\n")
+        printDetailsForExchange(exchange, for: match, with: player)
             
         var count = 0
         for reply in replies {
@@ -877,6 +879,8 @@ extension Simple: GKLocalPlayerListener {
         
         let message = exchange.message ?? "Accept the exhange with \(player.displayName)?"
         print("\nReceived exchange \(exchange.exchangeID) from \(player.alias) for match \(match.matchID)")
+        
+        printDetailsForExchange(exchange, for: match, with: player)
         
         let alert = UIAlertController(title: "Exchange", message: message, preferredStyle: .alert)
         
