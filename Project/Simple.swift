@@ -342,28 +342,28 @@ class Simple: UIViewController {
                 
                 self?.refreshInterface()
                 
-                guard let currentOpponent = self?.opponent else {
-                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
-                    return
-                }
-                
                 // From session #506 at WWDC 2013:
                 // https://developer.apple.com/videos/play/wwdc2013/506/
                 // Last participant on list does not time out.
                 // Include yourself last.
                 
-                guard let localParticipant = self?.localParticipant else {
+                guard let match = self?.currentMatch else {
                     print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
                     return
                 }
-                
+
+                guard let nextParticipants = self?.nextParticipantsForMatch(match) else {
+                    print("Failed to obtain next participants")
+                    return
+                }
+
                 let timeout = self?.turnTimeout ?? 60 * 60
                 let updatedData = Data()
                 
                 // Localized message to be set at end of turn or game:
                 self?.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
                 
-                self?.currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: timeout, match: updatedData) { [weak self] error in
+                self?.currentMatch?.endTurn(withNextParticipants: nextParticipants, turnTimeout: timeout, match: updatedData) { [weak self] error in
                     if let receivedError = error {
                         print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
                         self?.handleError(receivedError)
@@ -655,7 +655,35 @@ class Simple: UIViewController {
         }
     }
 
-
+    func nextParticipantsForMatch(_ match: GKTurnBasedMatch) -> [GKTurnBasedParticipant] {
+        var foundCurrentParticipant = false
+        var tail = [GKTurnBasedParticipant]()
+        var head = [GKTurnBasedParticipant]()
+        for participant in match.participants {
+            guard participant != match.currentParticipant else {
+                // Current partitipant is last element in tail.
+                // Following participants are added to the head.
+                tail.append(participant)
+                foundCurrentParticipant = true
+                continue
+            }
+            if foundCurrentParticipant {
+                tail.append(participant)
+            } else {
+                head.append(participant)
+            }
+        }
+        
+        let newTurnOrder = head + tail
+        print("New Turn Order:")
+        var count = 1
+        for participant in newTurnOrder {
+            print("\(count) \(participant.player?.alias ?? "N/A")")
+            count += 1
+        }
+        
+        return head + tail
+    }
     
     // MARK: Exchange Related
     
