@@ -415,6 +415,8 @@ class Simple: UIViewController {
                     
                     print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
                     self?.refreshInterface()
+                    
+                    print("Current player: \(self?.currentMatch?.currentParticipant?.player?.displayName ?? "N/A")")
                 }
             }
         } catch let error as MatchUpdateError {
@@ -735,16 +737,8 @@ class Simple: UIViewController {
         var tail = [GKTurnBasedParticipant]()
         var head = [GKTurnBasedParticipant]()
         for participant in match.participants {
-            guard participant != match.currentParticipant else {
-
-                // Current partitipant is last element in tail.
-                // Following participants are added to the head.
-                
-                if !didQuit {
-                    tail.append(participant)
-                }
-                
-                foundCurrentParticipant = true
+            guard participant.matchOutcome == .none else {
+                // Player has already exited the game.
                 continue
             }
             if foundCurrentParticipant {
@@ -752,17 +746,19 @@ class Simple: UIViewController {
             } else {
                 tail.append(participant)
             }
+            
+            foundCurrentParticipant = (participant == match.currentParticipant)
         }
         
         let newTurnOrder = head + tail
         print("New Turn Order:")
         var count = 1
         for participant in newTurnOrder {
-            print("\(count) \(participant.player?.displayName ?? "N/A")")
+            print("\(count). \(participant.player?.displayName ?? "N/A")")
             count += 1
         }
         
-        return head + tail
+        return newTurnOrder
     }
     
     // MARK: Exchange Related
@@ -1077,8 +1073,16 @@ extension Simple: GKLocalPlayerListener {
             }
         }
 
-        self.view.throb()
-        self.refreshInterface()
+        try? mergeExchangesAsNeeded { [weak self] error in
+            if let receivedError = error {
+                print("Failed to save merged data from exchanges:")
+                self?.handleError(receivedError)
+            } else {
+                print("Successfully merged data from exchanges!")
+                self?.refreshInterface()
+                self?.view.throb()
+            }
+        }
     }
 
     func player(_ player: GKPlayer, receivedExchangeCancellation exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
