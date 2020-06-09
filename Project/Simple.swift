@@ -25,7 +25,6 @@ class Simple: UIViewController {
     // MARK: - Interface Objects
 
     @IBOutlet weak var matchMaker: UIButton!
-    @IBOutlet weak var versionBuild: UILabel!
     
     @IBOutlet weak var matchState: UILabel!
     @IBOutlet weak var localPlayerState: UILabel!
@@ -40,7 +39,11 @@ class Simple: UIViewController {
     @IBOutlet weak var endTurnWin: BackgroundFilledButton!
     @IBOutlet weak var endTurnLose: BackgroundFilledButton!
     @IBOutlet weak var beginExchange: BackgroundFilledButton!
+    
     @IBOutlet weak var matchID: UILabel!
+    @IBOutlet weak var rematch: UIButton!
+
+    @IBOutlet weak var versionBuild: UILabel!
     
     // MARK: - Properties
     
@@ -143,6 +146,8 @@ class Simple: UIViewController {
         endTurnWin.isEnabled = isResolvingTurn
         endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
         
+        rematch.isHidden = !gameEnded
+        
         beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
 
         // Only enable reminders while out of turn.
@@ -206,31 +211,56 @@ class Simple: UIViewController {
     @IBAction func beginExchangeTap(_ sender: Any) {
         print("Tapped to begin Exchange")
         
+        guard let match = currentMatch else {
+            print("No match selected")
+            return
+        }
+        
         guard let currentOpponent = opponent else {
             print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
             return
         }
-
+        
         let stringArguments = [String]()
         let recipients = [currentOpponent]
         let turnTimeout: TimeInterval = 120 // seconds
         
-        currentMatch?.sendExchange(to: recipients, data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
-            if let receivedError = error {
-                print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                self?.handleError(receivedError)
-                return
+        func sendExchange() {
+            currentMatch?.sendExchange(to: recipients, data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
+                if let receivedError = error {
+                    print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                    self?.handleError(receivedError)
+                    return
+                }
+                
+                guard let receivedExchange = exchange else {
+                    print("No exchange received")
+                    return
+                }
+                
+                print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
+                self?.refreshInterface()
+                
+                self?.awaitReplyOrCancelExchange(receivedExchange)
+            }
+        }
+
+        let alert = UIAlertController(title: "Exchange with whom?", message: "Pick the player to trade with.", preferredStyle: .alert)
+        for participant in match.participants {
+            
+            guard participant.status != .matching else {
+                // Not yet a real participant to trade with.
+                continue
             }
             
-            guard let receivedExchange = exchange else {
-                print("No exchange received")
-                return
+            let recipient = UIAlertAction(title: participant.player?.alias ?? "Unknown Player", style: .default) { _ in
+                sendExchange()
             }
             
-            print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
-            self?.refreshInterface()
-            
-            self?.awaitReplyOrCancelExchange(receivedExchange)
+            alert.addAction(recipient)
+        }
+        self.present(alert, animated: true) {
+            print("Presented \(alert.actions.count) available participants for the exchange.")
         }
     }
     
@@ -459,7 +489,25 @@ class Simple: UIViewController {
             print("Error thrown: \(error.localizedDescription)")
         }
     }
+    
+    @IBAction func rematchTap(_ sender: Any) {
+        guard let match = currentMatch else {
+            print("No match selected, this button should've be hidden.")
+            return
+        }
         
+        match.rematch { [weak self] rematch, error in
+            if let receivedError = error {
+                print("Failed to start rematch!")
+                self?.handleError(receivedError)
+            } else {
+                print("Successfully created rematch \(rematch?.matchID ?? "N/A").")
+                self?.currentMatch = rematch
+                self?.refreshInterface()
+            }
+        }
+    }
+    
     // MARK: - Audio
     
     func prepareAudio() {
@@ -562,7 +610,7 @@ class Simple: UIViewController {
             case 3:
                 presentErrorWithMessage("Error communicating with the server.")
             default:
-                presentErrorWithMessage("Received error \(code): \(error.localizedDescription)")
+                presentErrorWithMessage("GameKit Error \(code): \(error.localizedDescription)")
             }
         }
         
@@ -615,6 +663,8 @@ class Simple: UIViewController {
         endTurnLose.isEnabled = false
 
         matchID.text = "No Match Selected"
+        
+        rematch.isHidden = true
     }
 
     func dataToStringArray(data: Data) -> [String]? {

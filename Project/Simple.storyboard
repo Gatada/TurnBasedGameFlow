@@ -45,14 +45,14 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="625-Os-Jkr" userLabel="Match Container">
                                 <rect key="frame" x="37.5" y="173" width="300" height="450"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="open" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ee-el-4Q0">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Open" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ee-el-4Q0">
                                         <rect key="frame" x="140" y="0.0" width="50.5" height="21"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xsZ-e8-ZF9" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="154" y="237" width="146" height="50"/>
+                                        <rect key="frame" x="154" y="227" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Game Lose">
                                             <color key="titleColor" name="Storefront Light"/>
@@ -68,7 +68,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Opponents Status:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="NnT-Ds-qyC">
-                                        <rect key="frame" x="42" y="91.5" width="90" height="12"/>
+                                        <rect key="frame" x="42" y="95" width="90" height="12"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -80,7 +80,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nFa-SY-r29" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="179" width="146" height="50"/>
+                                        <rect key="frame" x="0.0" y="169" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemYellowColor" red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="Q6H-t9-bSl"/>
@@ -98,20 +98,20 @@
                                             <action selector="updateMatchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1IF-Xt-owX"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="lost" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lib-xT-SCI">
-                                        <rect key="frame" x="140" y="116" width="154.5" height="21"/>
-                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Lost" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lib-xT-SCI">
+                                        <rect key="frame" x="140" y="115" width="154.5" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="done" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xPe-iS-FRY">
-                                        <rect key="frame" x="140" y="87" width="135" height="21"/>
-                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Done" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xPe-iS-FRY">
+                                        <rect key="frame" x="140" y="95" width="135" height="12"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rwc-EA-9cJ" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="154" y="179" width="146" height="50"/>
+                                        <rect key="frame" x="154" y="169" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Turn">
                                             <color key="titleColor" name="Storefront Light"/>
@@ -126,20 +126,20 @@
                                             <action selector="endTurnTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lsD-d1-UAS"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kpz-hh-KBB">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kpz-hh-KBB">
                                         <rect key="frame" x="140" y="29" width="94.5" height="21"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="none" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgq-dh-ToL">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgq-dh-ToL">
                                         <rect key="frame" x="140" y="58" width="113.5" height="21"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7eX-kc-a9s" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="154" y="294" width="146" height="50"/>
+                                        <rect key="frame" x="154" y="284" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemPurpleColor" red="0.68627450980000004" green="0.32156862749999998" blue="0.87058823529999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="End Game Win">
                                             <color key="titleColor" name="Storefront Light"/>
@@ -167,19 +167,19 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Opponents Outcome:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="a4A-UW-Uhz">
-                                        <rect key="frame" x="29" y="120.5" width="103" height="12"/>
+                                        <rect key="frame" x="29" y="115" width="103" height="12"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match ID" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="vDF-Rc-GM1">
-                                        <rect key="frame" x="0.0" y="378" width="300" height="21"/>
+                                        <rect key="frame" x="0.0" y="368" width="300" height="21"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IgV-q0-QEz" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="294" width="146" height="50"/>
+                                        <rect key="frame" x="0.0" y="284" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="Begin Exchange">
                                             <color key="titleColor" name="Storefront Light"/>
@@ -195,7 +195,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3l6-Sc-irt" customClass="BackgroundFilledButton" customModule="Game_Flow" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="237" width="146" height="50"/>
+                                        <rect key="frame" x="0.0" y="227" width="146" height="50"/>
                                         <color key="backgroundColor" systemColor="systemOrangeColor" red="1" green="0.58431372550000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <state key="normal" title="Send Reminder">
                                             <color key="titleColor" name="Storefront Light"/>
@@ -210,6 +210,14 @@
                                             <action selector="sendReminderTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NCT-DZ-UpL"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fP3-4N-hPj">
+                                        <rect key="frame" x="107.5" y="392" width="85" height="35"/>
+                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="19"/>
+                                        <state key="normal" title="Rematch!"/>
+                                        <connections>
+                                            <action selector="rematchTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="G8Y-4S-dMN"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
@@ -222,16 +230,18 @@
                                     <constraint firstItem="Tgq-dh-ToL" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="4X6-h0-mFI"/>
                                     <constraint firstItem="xsZ-e8-ZF9" firstAttribute="centerX" secondItem="rwc-EA-9cJ" secondAttribute="centerX" id="5fE-Vl-xoV"/>
                                     <constraint firstItem="qGg-OV-G9T" firstAttribute="centerY" secondItem="kpz-hh-KBB" secondAttribute="centerY" id="5l3-Yi-xry"/>
-                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="top" secondItem="Tgq-dh-ToL" secondAttribute="bottom" constant="8" id="75H-V7-mji"/>
+                                    <constraint firstItem="xPe-iS-FRY" firstAttribute="top" secondItem="Tgq-dh-ToL" secondAttribute="bottom" constant="16" id="75H-V7-mji"/>
                                     <constraint firstItem="IgV-q0-QEz" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="BPo-BP-AQ8"/>
                                     <constraint firstItem="kpz-hh-KBB" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="BZG-OW-zea"/>
                                     <constraint firstItem="7eX-kc-a9s" firstAttribute="centerY" secondItem="IgV-q0-QEz" secondAttribute="centerY" id="CCx-iN-MQG"/>
+                                    <constraint firstItem="fP3-4N-hPj" firstAttribute="top" secondItem="vDF-Rc-GM1" secondAttribute="bottom" constant="3" id="CnK-eV-Jix"/>
                                     <constraint firstItem="Lib-xT-SCI" firstAttribute="width" secondItem="a4A-UW-Uhz" secondAttribute="width" multiplier="3:2" id="E0k-MW-ZCY"/>
                                     <constraint firstItem="5ee-el-4Q0" firstAttribute="leading" secondItem="XbD-FX-wv2" secondAttribute="trailing" constant="8" id="E1y-Ne-xFp"/>
                                     <constraint firstItem="Tgq-dh-ToL" firstAttribute="leading" secondItem="cMv-f3-4fT" secondAttribute="trailing" constant="8" id="EOU-qJ-82T"/>
                                     <constraint firstItem="xPe-iS-FRY" firstAttribute="leading" secondItem="5ee-el-4Q0" secondAttribute="leading" id="Eal-Ef-D3R"/>
                                     <constraint firstItem="xsZ-e8-ZF9" firstAttribute="centerY" secondItem="3l6-Sc-irt" secondAttribute="centerY" id="EcK-Kd-fbe"/>
                                     <constraint firstAttribute="trailing" secondItem="rwc-EA-9cJ" secondAttribute="trailing" id="GAt-4A-91k"/>
+                                    <constraint firstItem="fP3-4N-hPj" firstAttribute="centerX" secondItem="625-Os-Jkr" secondAttribute="centerX" id="H4N-MF-7LW"/>
                                     <constraint firstItem="5ee-el-4Q0" firstAttribute="width" secondItem="XbD-FX-wv2" secondAttribute="width" multiplier="3:2" id="H7B-oG-se7"/>
                                     <constraint firstItem="7eX-kc-a9s" firstAttribute="width" secondItem="nFa-SY-r29" secondAttribute="width" id="IUa-cX-wmf"/>
                                     <constraint firstItem="IgV-q0-QEz" firstAttribute="top" secondItem="3l6-Sc-irt" secondAttribute="bottom" constant="7" id="Is9-Zg-NiI"/>
@@ -268,13 +278,13 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 active / 7 total" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="38K-ZP-UVg" userLabel="Exchange History">
-                                <rect key="frame" x="177.5" y="318" width="83.5" height="12"/>
+                                <rect key="frame" x="177.5" y="308" width="83.5" height="12"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Exchanges:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="R3V-xM-mEE">
-                                <rect key="frame" x="114" y="318" width="55.5" height="12"/>
+                                <rect key="frame" x="114" y="308" width="55.5" height="12"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="10"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -326,6 +336,7 @@
                         <outlet property="matchState" destination="5ee-el-4Q0" id="eae-Ad-ePS"/>
                         <outlet property="opponentOutcome" destination="Lib-xT-SCI" id="nwA-Nb-X7X"/>
                         <outlet property="opponentStatus" destination="xPe-iS-FRY" id="N34-uB-IB4"/>
+                        <outlet property="rematch" destination="fP3-4N-hPj" id="7yL-ff-yVI"/>
                         <outlet property="sendReminder" destination="3l6-Sc-irt" id="UlI-CF-7ek"/>
                         <outlet property="updateMatch" destination="nFa-SY-r29" id="Vy8-rL-DBn"/>
                         <outlet property="versionBuild" destination="Af5-2O-uj8" id="OYf-fg-dJ9"/>
