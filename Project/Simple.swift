@@ -398,15 +398,17 @@ class Simple: UIViewController {
                     return
                 }
                 
-                guard let currentOpponent = self?.opponent else {
-                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
-                    return
+                for participant in match.participants {
+                    guard participant != match.currentParticipant else {
+                        participant.matchOutcome = .won
+                        continue
+                    }
+                    
+                    // All active participants have lost.
+                    if participant.matchOutcome == .none {
+                        participant.matchOutcome = .lost
+                    }
                 }
-                
-                if currentOpponent.matchOutcome == .none {
-                    currentOpponent.matchOutcome = .lost
-                }
-                match.currentParticipant?.matchOutcome = .won
                 
                 self?.endCurrentMatch()
             }
@@ -434,15 +436,17 @@ class Simple: UIViewController {
                     return
                 }
                 
-                guard let currentOpponent = self?.opponent else {
-                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
-                    return
+                for participant in match.participants {
+                    guard participant != match.currentParticipant else {
+                        participant.matchOutcome = .lost
+                        continue
+                    }
+                    
+                    // All other active participants have lost.
+                    if participant.matchOutcome == .none {
+                        participant.matchOutcome = .won
+                    }
                 }
-
-                if currentOpponent.matchOutcome == .none {
-                    currentOpponent.matchOutcome = .won
-                }
-                match.currentParticipant?.matchOutcome = .lost
 
                 self?.endCurrentMatch()
             }
