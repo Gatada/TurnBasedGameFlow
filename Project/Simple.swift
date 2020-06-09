@@ -54,6 +54,7 @@ class Simple: UIViewController {
     
     weak var matchMakerController: GKTurnBasedMatchmakerViewController?
     weak var alert: UIAlertController?
+    var alertQueue = [UIAlertController]()
     
     /// Returns `true` if the local player has been authenticated, `false` otherwise.
     public var localPlayerIsAuthenticated: Bool {
@@ -495,7 +496,7 @@ class Simple: UIViewController {
             print("No match selected, this button should've be hidden.")
             return
         }
-        
+
         match.rematch { [weak self] rematch, error in
             if let receivedError = error {
                 print("Failed to start rematch!")
@@ -581,12 +582,12 @@ class Simple: UIViewController {
         }
     }
     
-    private func prepareMatchRequest(withInviteMessage message: String? = nil, usingAutomatch: Bool) -> GKMatchRequest {
+    private func prepareMatchRequest(withInviteMessage message: String? = nil, playerCount: Int = 2, usingAutomatch: Bool) -> GKMatchRequest {
         
         let request = GKMatchRequest()
-        request.minPlayers = 3
+        request.minPlayers = 2
         request.maxPlayers = 3
-        request.defaultNumberOfPlayers = 3
+        request.defaultNumberOfPlayers = playerCount
         request.inviteMessage = message ?? "Would you like to play?"
         
         if #available(iOS 13.0, *) {
@@ -603,12 +604,18 @@ class Simple: UIViewController {
     
     // MARK: - Helpers
     
+    func advanceAlertQueueIfNeeded(forced: Bool = false) {
+        // TODO: Make a queue
+    }
+    
     func handleError(_ error: Error) {
         
         func gamekitError(_ code: Int) {
             switch code {
             case 3:
                 presentErrorWithMessage("Error communicating with the server.")
+            case 8:
+                presentErrorWithMessage("Sorry, one or more of the participants could not receive the invite.", title: "Failed to create rematch")
             default:
                 presentErrorWithMessage("GameKit Error \(code): \(error.localizedDescription)")
             }
@@ -626,7 +633,7 @@ class Simple: UIViewController {
         }
     }
     
-    func presentErrorWithMessage(_ message: String) {
+    func presentErrorWithMessage(_ message: String, title: String = "Received Error") {
         
         if self.alert != nil {
             self.dismiss(animated: true) {
@@ -634,7 +641,7 @@ class Simple: UIViewController {
             }
         }
         
-        let alert = UIAlertController(title: "Received Error", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(ok)
         self.alert = alert
