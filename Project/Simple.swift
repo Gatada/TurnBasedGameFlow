@@ -270,6 +270,8 @@ class Simple: UIViewController {
         do {
             try mergeExchangesAsNeeded() { [weak self] error in
                 
+                self?.refreshInterface()
+                
                 if let receivedError = error {
                     self?.handleError(receivedError)
                     return
@@ -308,13 +310,13 @@ class Simple: UIViewController {
             return
         }
 
-        guard let exchanges = match.exchanges, let activeExchanges = match.activeExchanges else {
+        guard let exchanges = match.exchanges else {
             // There are no open exchanges that will prevent turn and game from ending.
             closure(nil)
             return
         }
 
-        guard activeExchanges.count == 0, exchanges.count > 0 else {
+        guard match.activeExchanges == nil || (match.activeExchanges?.count == 0 && exchanges.count > 0) else {
             throw MatchUpdateError.waitingForActiveExchangesToComplete
         }
 
@@ -337,77 +339,121 @@ class Simple: UIViewController {
     }
     
     @IBAction func endTurnTap(_ sender: Any) {
+        
+        do {
+            try mergeExchangesAsNeeded() { [weak self] error in
                 
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
-        // From session #506 at WWDC 2013:
-        // https://developer.apple.com/videos/play/wwdc2013/506/
-        // Last participant on list does not time out.
-        // Include yourself last.
-        
-        guard let localParticipant = localParticipant else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
-        // Localized message to be set at end of turn or game:
-        currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
-        
-        currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: turnTimeout, match: data) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                self?.handleError(receivedError)
-                return
+                self?.refreshInterface()
+                
+                guard let currentOpponent = self?.opponent else {
+                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
+                    return
+                }
+                
+                // From session #506 at WWDC 2013:
+                // https://developer.apple.com/videos/play/wwdc2013/506/
+                // Last participant on list does not time out.
+                // Include yourself last.
+                
+                guard let localParticipant = self?.localParticipant else {
+                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
+                    return
+                }
+                
+                // Localized message to be set at end of turn or game:
+                self?.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
+                
+                self?.currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: self?.turnTimeout, match: data) { [weak self] error in
+                    if let receivedError = error {
+                        print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                        self?.handleError(receivedError)
+                        return
+                    }
+                    
+                    print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
+                    self?.refreshInterface()
+                }
             }
-            
-            print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
-            self?.refreshInterface()
+        } catch let error as MatchUpdateError {
+            switch error {
+            case .waitingForActiveExchangesToComplete:
+                print("Waiting for active exchanges to be cancelled or resolved.")
+            }
+        } catch {
+            print("Error thrown: \(error.localizedDescription)")
         }
     }
     
     @IBAction func endTurnWinTap(_ sender: Any) {
-        print("Win match \(currentMatch?.matchID ?? "N/A")")
         
-        guard let match = currentMatch else {
-            print("No match selected.")
-            return
+        do {
+            try mergeExchangesAsNeeded() { [weak self] error in
+                
+                self?.refreshInterface()
+                
+                print("Win match \(self?.currentMatch?.matchID ?? "N/A")")
+                
+                guard let match = self?.currentMatch else {
+                    print("No match selected.")
+                    return
+                }
+                
+                guard let currentOpponent = self?.opponent else {
+                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
+                    return
+                }
+                
+                if currentOpponent.matchOutcome == .none {
+                    currentOpponent.matchOutcome = .lost
+                }
+                match.currentParticipant?.matchOutcome = .won
+                
+                self?.endCurrentMatch()
+            }
+        } catch let error as MatchUpdateError {
+            switch error {
+            case .waitingForActiveExchangesToComplete:
+                print("Waiting for active exchanges to be cancelled or resolved.")
+            }
+        } catch {
+            print("Error thrown: \(error.localizedDescription)")
         }
-        
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
-        if currentOpponent.matchOutcome == .none {
-            currentOpponent.matchOutcome = .lost
-        }
-        match.currentParticipant?.matchOutcome = .won
-        
-        endCurrentMatch()
     }
     
     @IBAction func endTurnLossTap(_ sender: Any) {
-        print("Lose match \(currentMatch?.matchID ?? "N/A")")
         
-        guard let match = currentMatch else {
-            print("No match selected.")
-            return
-        }
-        
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
+        do {
+            try mergeExchangesAsNeeded() { [weak self] error in
+                
+                self?.refreshInterface()
+                
+                print("Lose match \(self?.currentMatch?.matchID ?? "N/A")")
+                
+                guard let match = self?.currentMatch else {
+                    print("No match selected.")
+                    return
+                }
+                
+                guard let currentOpponent = self?.opponent else {
+                    print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
+                    return
+                }
 
-        if currentOpponent.matchOutcome == .none {
-            currentOpponent.matchOutcome = .won
-        }
-        match.currentParticipant?.matchOutcome = .lost
+                if currentOpponent.matchOutcome == .none {
+                    currentOpponent.matchOutcome = .won
+                }
+                match.currentParticipant?.matchOutcome = .lost
 
-        endCurrentMatch()
+                self?.endCurrentMatch()
+            }
+        } catch let error as MatchUpdateError {
+            switch error {
+            case .waitingForActiveExchangesToComplete:
+                print("Waiting for active exchanges to be cancelled or resolved.")
+            }
+        } catch {
+            print("Error thrown: \(error.localizedDescription)")
+        }
     }
         
     // MARK: - Audio
