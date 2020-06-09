@@ -360,10 +360,13 @@ class Simple: UIViewController {
                     return
                 }
                 
+                let timeout = self?.turnTimeout ?? 60 * 60
+                let updatedData = Data()
+                
                 // Localized message to be set at end of turn or game:
                 self?.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
                 
-                self?.currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: self?.turnTimeout, match: data) { [weak self] error in
+                self?.currentMatch?.endTurn(withNextParticipants: [currentOpponent, localParticipant], turnTimeout: timeout, match: updatedData) { [weak self] error in
                     if let receivedError = error {
                         print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
                         self?.handleError(receivedError)
