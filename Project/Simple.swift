@@ -679,7 +679,7 @@ extension Simple: GKLocalPlayerListener {
         
         print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.alias ?? "N/A" : "None")")
         
-        let alert = UIAlertController(title: "Match against \(opponent.player?.alias ?? "N/A") ended in a \(stringForPlayerOutcome(localPlayer.matchOutcome))!", message: "Do you want to jump to that match?", preferredStyle: .alert)
+        let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome)) a Match against \(opponent.player?.alias ?? "N/A")!", message: "Do you want to see the result now?", preferredStyle: .alert)
         let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
             print("Player chose to go to match \(match.matchID)")
             self?.currentMatch = match
