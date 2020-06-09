@@ -595,6 +595,14 @@ class Simple: UIViewController {
             self.refreshInterface()
         }
     }
+    
+    func resolveActiveExchanges(forMatch match: GKTurnBasedMatch) {
+        if let unresolvedExchanges = currentMatch?.activeExchanges {
+            mergeMatch(match, with: data, for: unresolvedExchanges) { error in
+                print(error == nil ? "Resolved active exchanges." : "Failed to resolve active exchanges!")
+            }
+        }
+    }
 }
 
 
@@ -672,7 +680,7 @@ extension Simple: GKLocalPlayerListener {
         print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.alias ?? "N/A" : "None")")
         
         let alert = UIAlertController(title: "Match against \(opponent.player?.alias ?? "N/A") ended in a \(stringForPlayerOutcome(localPlayer.matchOutcome))!", message: "Do you want to jump to that match?", preferredStyle: .alert)
-        let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
+        let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
             print("Player chose to go to match \(match.matchID)")
             self?.currentMatch = match
             self?.refreshInterface()
@@ -684,7 +692,7 @@ extension Simple: GKLocalPlayerListener {
         alert.addAction(jump)
         alert.addAction(ignore)
         
-        self.show(alert, sender: self)
+        self.present(alert, animated: true)
         self.alert = alert
     }
 
@@ -724,12 +732,7 @@ extension Simple: GKLocalPlayerListener {
                 self.player(sender, receivedExchangeRequest: exchange, for: match)
             }
             
-            if let unresolvedExchanges = match.activeExchanges {
-                mergeMatch(match, with: data, for: unresolvedExchanges) { error in
-                    print(error == nil ? "Resolved active exchanges." : "Failed to resolve active exchanges!")
-                }
-            }
-            
+            resolveActiveExchanges(forMatch: match)
             
         } else  if match.matchID == self.currentMatch?.matchID {
             
@@ -759,7 +762,9 @@ extension Simple: GKLocalPlayerListener {
             alert.addAction(jump)
             alert.addAction(ignore)
             
-            self.show(alert, sender: self)
+            self.present(alert, animated: true, completion: {
+                print("Presented turn dialog")
+            })
             self.alert = alert
         }
         
@@ -809,6 +814,9 @@ extension Simple: GKLocalPlayerListener {
     
 
     func player(_ player: GKPlayer, receivedExchangeReplies replies: [GKTurnBasedExchangeReply], forCompletedExchange exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
+        
+        // Hmm... Is this simply received to update the game on the client side?
+        // As merging data from here seems to always result in an error.
         
         print("RECEIVED REPLIES: Exchange \(exchange.exchangeID) completed.")
         assert(localParticipant?.player == match.currentParticipant?.player, "A player other than the current participant received exchange replies.")

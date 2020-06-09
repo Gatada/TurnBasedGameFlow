@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0421CCAD248E6E61006D1B3E /* UIApplicationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */; };
-		04633BFB248EFF9A00C12505 /* GKMessageImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 04633BFA248EFF9A00C12505 /* GKMessageImage.png */; };
+		04633BFD248F7EAB00C12505 /* GKMessageImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 04633BFC248F7EAB00C12505 /* GKMessageImage.png */; };
 		04B1A968248EEFAF002ED61B /* UIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B1A967248EEFAF002ED61B /* UIView.swift */; };
 		04D3A9A3248B996400AE9325 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D3A9A2248B996400AE9325 /* AppDelegate.swift */; };
 		04D3A9AC248B996500AE9325 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 04D3A9AB248B996500AE9325 /* Assets.xcassets */; };
@@ -25,7 +25,7 @@
 /* Begin PBXFileReference section */
 		0421CCA8248E507B006D1B3E /* GKInvite.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GKInvite.caf; sourceTree = "<group>"; };
 		0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationDelegate.swift; sourceTree = "<group>"; };
-		04633BFA248EFF9A00C12505 /* GKMessageImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GKMessageImage.png; sourceTree = "<group>"; };
+		04633BFC248F7EAB00C12505 /* GKMessageImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GKMessageImage.png; sourceTree = "<group>"; };
 		04B1A967248EEFAF002ED61B /* UIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIView.swift; sourceTree = "<group>"; };
 		04D3A99F248B996400AE9325 /* Game Flow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Game Flow.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04D3A9A2248B996400AE9325 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -56,7 +56,7 @@
 		0421CCA9248E508C006D1B3E /* GameKit */ = {
 			isa = PBXGroup;
 			children = (
-				04633BFA248EFF9A00C12505 /* GKMessageImage.png */,
+				04633BFC248F7EAB00C12505 /* GKMessageImage.png */,
 				0421CCA8248E507B006D1B3E /* GKInvite.caf */,
 			);
 			path = GameKit;
@@ -210,7 +210,7 @@
 				04D3A9BB248B9A2F00AE9325 /* Simple.caf in Resources */,
 				04D3A9AF248B996500AE9325 /* LaunchScreen.storyboard in Resources */,
 				04D3A9AC248B996500AE9325 /* Assets.xcassets in Resources */,
-				04633BFB248EFF9A00C12505 /* GKMessageImage.png in Resources */,
+				04633BFD248F7EAB00C12505 /* GKMessageImage.png in Resources */,
 				04D3A9BA248B9A2C00AE9325 /* Simple.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
