@@ -162,22 +162,22 @@ class Simple: UIViewController {
         
         matchID.text = match.matchID
         matchState.text = "\(stringForMatchStatus(match.status))"
-        
-        if let localPlayer = self.localParticipant {
-            localPlayerState.text = "\(stringForPlayerState(localPlayer.status))"
-            localPlayerOutcome.text = "\(stringForPlayerOutcome(localPlayer.matchOutcome))"
-        } else {
-            localPlayerState.text = "N/A"
-            localPlayerOutcome.text = "N/A"
-        }
 
-        if let currentOpponent = self.opponent {
-            opponentStatus.text = stringForPlayerState(currentOpponent.status)
-            opponentOutcome.text = stringForPlayerOutcome(currentOpponent.matchOutcome)
-        } else {
-            opponentStatus.text = "N/A"
-            opponentOutcome.text = "N/A"
+        var aggrigateStatus = ""
+        var aggrigateOutcome = ""
+        var comma = ""
+        for participant in match.participants {
+            guard participant != self.localParticipant else {
+                localPlayerState.text = stringForPlayerState(participant.status)
+                localPlayerOutcome.text = stringForPlayerOutcome(participant.matchOutcome)
+                continue
+            }
+            aggrigateStatus += comma + stringForPlayerState(participant.status)
+            aggrigateOutcome += comma + stringForPlayerOutcome(participant.matchOutcome)
+            comma = ", "
         }
+        opponentStatus.text = aggrigateStatus
+        opponentOutcome.text = aggrigateOutcome
         
         exchangeHistory.text = "\(match.activeExchanges?.count ?? 0) active / \(match.exchanges?.count ?? 0) total"
         
