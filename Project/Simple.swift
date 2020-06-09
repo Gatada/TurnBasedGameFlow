@@ -228,12 +228,7 @@ class Simple: UIViewController {
             print("No match selected")
             return
         }
-        
-        guard let currentOpponent = opponent else {
-            print("No opponent for match \(currentMatch?.matchID ?? "N/A")")
-            return
-        }
-        
+
         let stringArguments = [String]()
         let turnTimeout: TimeInterval = 120 // seconds
         
@@ -265,7 +260,7 @@ class Simple: UIViewController {
                 continue
             }
             
-            let recipient = UIAlertAction(title: participant.player?.alias ?? "Unknown Player", style: .default) { _ in
+            let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { _ in
                 sendExchange(to: participant)
             }
             
@@ -763,7 +758,7 @@ class Simple: UIViewController {
         print("New Turn Order:")
         var count = 1
         for participant in newTurnOrder {
-            print("\(count) \(participant.player?.alias ?? "N/A")")
+            print("\(count) \(participant.player?.displayName ?? "N/A")")
             count += 1
         }
         
@@ -826,11 +821,11 @@ class Simple: UIViewController {
         print("Match   : \(match.matchID) is \(stringForMatchStatus(match.status))")
         print("Exchange: \(stringForExchangeStatus(exchange.status))")
         print("Message : \(exchange.message ?? "")")
-        print("Local   : \(GKLocalPlayer.local.alias)")
-        print("Creator : \(player.alias)")
-        print("Invitee : \(exchange.recipients.first?.player?.alias ?? "N/A")")
+        print("Local   : \(GKLocalPlayer.local.displayName)")
+        print("Creator : \(player.displayName)")
+        print("Invitee : \(exchange.recipients.first?.player?.displayName ?? "N/A")")
         print("Replies : \(exchange.replies?.count ?? 0)")
-        print("Resolve : \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.\n")
+        print("Resolve : \(match.currentParticipant?.player?.displayName ?? "N/A") will resolve the data.\n")
     }
 }
 
@@ -917,9 +912,9 @@ extension Simple: GKLocalPlayerListener {
             return
         }
         
-        print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.alias ?? "N/A" : "None")")
+        print("Current player: \(match.currentParticipant != nil ? match.currentParticipant?.player?.displayName ?? "N/A" : "None")")
         
-        let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome)) a Match against \(opponent.player?.alias ?? "N/A")!", message: "Do you want to see the result now?", preferredStyle: .alert)
+        let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome)) a Match against \(opponent.player?.displayName ?? "N/A")!", message: "Do you want to see the result now?", preferredStyle: .alert)
         let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
             print("Player chose to go to match \(match.matchID)")
             self?.currentMatch = match
@@ -994,7 +989,7 @@ extension Simple: GKLocalPlayerListener {
                 player.player != GKLocalPlayer.local
             }.first
             
-            let alert = UIAlertController(title: "It's your turn in a game against \(opponent?.player?.alias ?? "N/A")!", message: "Do you want to jump to that match?", preferredStyle: .alert)
+            let alert = UIAlertController(title: "It's your turn in a game against \(opponent?.player?.displayName ?? "N/A")!", message: "Do you want to jump to that match?", preferredStyle: .alert)
             let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
                 print("Player chose to go to match \(match.matchID)")
                 self?.currentMatch = match
@@ -1082,11 +1077,12 @@ extension Simple: GKLocalPlayerListener {
             }
         }
 
+        self.view.throb()
         self.refreshInterface()
     }
 
     func player(_ player: GKPlayer, receivedExchangeCancellation exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
-        print("\nExchange creator \(exchange.sender.player?.alias ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
+        print("\nExchange creator \(exchange.sender.player?.displayName ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
         if self.alert != nil {
             self.dismiss(animated: true) {
                 self.alert = nil
@@ -1105,19 +1101,19 @@ extension Simple: GKLocalPlayerListener {
         // again in MatchMaker - which shows the exchange. And now, replying to it works on the replier side..
         // However, now I get an error on the exchange creator side when receiving the reply.
         
-        let message = exchange.message ?? "Accept the exhange with \(player.displayName)?"
-        print("\nReceived exchange \(exchange.exchangeID) from \(player.alias) for match \(match.matchID)")
+        let message = exchange.message ?? "Accept the exhange or ignore it for now."
+        print("\nReceived exchange \(exchange.exchangeID) from \(player.displayName) for match \(match.matchID)")
         
         printDetailsForExchange(exchange, for: match, with: player)
         
-        let alert = UIAlertController(title: "Exchange", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: "Accept exchange with \(player.displayName)?", message: message, preferredStyle: .alert)
         
         let accept = UIAlertAction(title: "Accept", style: .default) { [weak self] action in
             self?.replyToExchange(exchange, accepted: true)
             self?.refreshInterface()
         }
         
-        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self] action in
+        let decline = UIAlertAction(title: "Ignore", style: .destructive) { [weak self] action in
 
             // I am starting to think that declining an exchange simply
             // means to let it time out.
