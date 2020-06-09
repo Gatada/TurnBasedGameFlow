@@ -150,7 +150,7 @@ class Simple: UIViewController {
         endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
         
         // These two occupy same screen real-estate:
-        quitInTurn.isHidden = !isResolvingTurn && !gameEnded
+        quitInTurn.isHidden = (!isResolvingTurn && !gameEnded) || gameEnded
         rematch.isHidden = !gameEnded
         
         beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
@@ -203,7 +203,7 @@ class Simple: UIViewController {
             return
         }
         player(GKLocalPlayer.local, wantsToQuitMatch: match)
-    }    
+    }
     
     @IBAction func matchMakerTap(_ sender: Any) {
         
@@ -879,11 +879,12 @@ extension Simple: GKLocalPlayerListener {
         let nextUp = nextParticipantsForMatch(match, didQuit: true)
         
         // Pass the match to the next player by calling
-        match.participantQuitInTurn(with: .quit, nextParticipants: nextUp, turnTimeout: turnTimeout, match: data) { (error) in
+        match.participantQuitInTurn(with: .quit, nextParticipants: nextUp, turnTimeout: turnTimeout, match: data) { [weak self] error in
             if let receivedError = error {
                 print("Failed to quit match \(match.matchID) with error: \(receivedError)")
             } else {
                 print("Match \(match.matchID) was successfully quit by local player.")
+                self?.refreshInterface()
             }
         }
     }
