@@ -449,7 +449,7 @@ class Simple: UIViewController {
                 }
                 
                 for participant in match.participants {
-                    guard participant != match.currentParticipant else {
+                    guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
                         participant.matchOutcome = .won
                         continue
                     }
@@ -488,7 +488,7 @@ class Simple: UIViewController {
                 
                 // Setting the outcome for all participants
                 for participant in match.participants {
-                    guard participant != match.currentParticipant else {
+                    guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
                         participant.matchOutcome = .lost
                         continue
                     }
@@ -902,6 +902,11 @@ extension Simple: GKLocalPlayerListener {
             print("Local player not found in participants list for match \(match.matchID)")
             return
         }
+        
+        print("ENDED MATCH OVERVIEW")
+        for participant in match.participants {
+            print("\(participant.player?.displayName)\t: \(stringForPlayerOutcome(participant.matchOutcome))")
+        }
 
         var opponents = ""
         var comma = ""
@@ -927,9 +932,14 @@ extension Simple: GKLocalPlayerListener {
         let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome).lowercased()) in a match against \(opponents)!", message: "Do you want to see the result now?", preferredStyle: .alert)
         
         if alreadyViewingMatch {
+            
             let ok = UIAlertAction(title: "OK", style: .cancel, handler: nil)
             alert.addAction(ok)
+            alert.title = "You \(stringForPlayerOutcome(localPlayer.matchOutcome).lowercased()) against \(opponents)."
             alert.message = ""
+            
+            self.currentMatch = match
+            self.refreshInterface()
             
         } else {
             let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
