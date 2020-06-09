@@ -668,9 +668,9 @@ class Simple: UIViewController {
                 continue
             }
             if foundCurrentParticipant {
-                tail.append(participant)
-            } else {
                 head.append(participant)
+            } else {
+                tail.append(participant)
             }
         }
         
