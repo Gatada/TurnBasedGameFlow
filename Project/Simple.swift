@@ -272,6 +272,12 @@ class Simple: UIViewController {
             
             alert.addAction(recipient)
         }
+        
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            print("Player cancelled exchange before it began.")
+        }
+        alert.addAction(cancel)
+        
         self.present(alert, animated: true) {
             print("Presented \(alert.actions.count) available participants for the exchange.")
         }
