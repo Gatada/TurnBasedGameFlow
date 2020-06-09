@@ -219,9 +219,9 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LUo-ff-0qQ">
-                                        <rect key="frame" x="126.5" y="392" width="47" height="35"/>
+                                        <rect key="frame" x="91.5" y="392" width="117" height="35"/>
                                         <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="19"/>
-                                        <state key="normal" title="Quit!">
+                                        <state key="normal" title="Quit In Turn!">
                                             <color key="titleColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
