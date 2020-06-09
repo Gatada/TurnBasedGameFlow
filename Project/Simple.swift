@@ -235,11 +235,10 @@ class Simple: UIViewController {
         }
         
         let stringArguments = [String]()
-        let recipients = [currentOpponent]
         let turnTimeout: TimeInterval = 120 // seconds
         
-        func sendExchange() {
-            currentMatch?.sendExchange(to: recipients, data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
+        func sendExchange(to recipient: GKTurnBasedParticipant) {
+            currentMatch?.sendExchange(to: [recipient], data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
                 if let receivedError = error {
                     print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
                     self?.handleError(receivedError)
@@ -267,7 +266,7 @@ class Simple: UIViewController {
             }
             
             let recipient = UIAlertAction(title: participant.player?.alias ?? "Unknown Player", style: .default) { _ in
-                sendExchange()
+                sendExchange(to: participant)
             }
             
             alert.addAction(recipient)
