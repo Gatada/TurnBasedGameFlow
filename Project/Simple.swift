@@ -46,7 +46,7 @@ class Simple: UIViewController {
     
     var player: AVAudioPlayer?
 
-    let turnTimeout: TimeInterval = 60 * 60 // 60 * 60 * 24 * 7 // One Week
+    let turnTimeout: TimeInterval = 60 * 10 // 10 min to speed up testing
     let data = Data()
     
     weak var matchMakerController: GKTurnBasedMatchmakerViewController?
@@ -80,14 +80,11 @@ class Simple: UIViewController {
             player.player != GKLocalPlayer.local
         }.first
         
-        print("""
-            
-            Local   : \(GKLocalPlayer.local.playerID)
-            Opponent: \(opponent?.status == .matching ? "Searching.." : (opponent?.player?.playerID ?? "n/a"))
-            
-            Current : \(match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID ? "Resolving Turn!" : "Waiting..")
-            
-            """)
+        // print("""
+        //     Local   : \(GKLocalPlayer.local.playerID)
+        //     Opponent: \(opponent?.status == .matching ? "Searching.." : (opponent?.player?.playerID ?? "n/a"))
+        //     Current : \(match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID ? "Resolving Turn!" : "Waiting..")
+        //     """)
         
         return opponent
     }

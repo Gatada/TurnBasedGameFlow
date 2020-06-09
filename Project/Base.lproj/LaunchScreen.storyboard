@@ -143,6 +143,12 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="by @johanhwb" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OtN-Ke-Hqa">
+                                <rect key="frame" x="171.5" y="842" width="71" height="12"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -154,9 +160,11 @@
                             <constraint firstItem="Y0H-SO-Nuj" firstAttribute="leading" secondItem="yqT-wb-wLN" secondAttribute="leading" id="IRR-ax-Ejr"/>
                             <constraint firstItem="Y0H-SO-Nuj" firstAttribute="leading" secondItem="Leu-np-tQ2" secondAttribute="trailing" constant="8" id="ODJ-Le-CQQ"/>
                             <constraint firstItem="BdI-X4-8k7" firstAttribute="top" secondItem="GrM-iX-Abo" secondAttribute="top" constant="112" id="Pmv-7H-Kae"/>
+                            <constraint firstItem="GrM-iX-Abo" firstAttribute="bottom" secondItem="OtN-Ke-Hqa" secondAttribute="bottom" constant="8" id="YWV-sV-k1m"/>
                             <constraint firstItem="BdI-X4-8k7" firstAttribute="width" secondItem="39G-LF-qN1" secondAttribute="width" multiplier="0.8" id="fAP-uh-nGl"/>
                             <constraint firstItem="Leu-np-tQ2" firstAttribute="centerY" secondItem="Y0H-SO-Nuj" secondAttribute="centerY" id="hBY-hA-02I"/>
                             <constraint firstItem="VR8-18-Ad4" firstAttribute="top" secondItem="Y0H-SO-Nuj" secondAttribute="bottom" constant="221" id="kNW-uL-tdg"/>
+                            <constraint firstItem="OtN-Ke-Hqa" firstAttribute="centerX" secondItem="39G-LF-qN1" secondAttribute="centerX" id="lX6-qx-10l"/>
                             <constraint firstItem="IcO-t0-eRD" firstAttribute="centerX" secondItem="39G-LF-qN1" secondAttribute="centerX" id="mw9-it-zPU"/>
                             <constraint firstItem="BdI-X4-8k7" firstAttribute="centerX" secondItem="39G-LF-qN1" secondAttribute="centerX" id="qdZ-8r-uHw"/>
                             <constraint firstItem="yqT-wb-wLN" firstAttribute="leading" secondItem="DfM-Wu-m5c" secondAttribute="trailing" constant="8" id="r02-BN-fi0"/>
