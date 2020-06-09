@@ -42,7 +42,9 @@ class Simple: UIViewController {
     
     @IBOutlet weak var matchID: UILabel!
     @IBOutlet weak var rematch: UIButton!
-
+    @IBOutlet weak var quitInTurn: UIButton!
+    
+    
     @IBOutlet weak var versionBuild: UILabel!
     
     // MARK: - Properties
@@ -147,6 +149,8 @@ class Simple: UIViewController {
         endTurnWin.isEnabled = isResolvingTurn
         endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
         
+        // These two occupy same screen real-estate:
+        quitInTurn.isHidden = !isResolvingTurn && !gameEnded
         rematch.isHidden = !gameEnded
         
         beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
@@ -192,6 +196,14 @@ class Simple: UIViewController {
     }
 
     // MARK: - User Interaction
+    
+    @IBAction func quitMatchInTurnTap(_ sender: Any) {
+        guard let match = currentMatch else {
+            print("Tried to quit a match when no match is selected.")
+            return
+        }
+        player(GKLocalPlayer.local, wantsToQuitMatch: match)
+    }    
     
     @IBAction func matchMakerTap(_ sender: Any) {
         
@@ -467,13 +479,14 @@ class Simple: UIViewController {
                     return
                 }
                 
+                // Setting the outcome for all participants
                 for participant in match.participants {
                     guard participant != match.currentParticipant else {
                         participant.matchOutcome = .lost
                         continue
                     }
                     
-                    // All other active participants have lost.
+                    // All other active participants have won.
                     if participant.matchOutcome == .none {
                         participant.matchOutcome = .won
                     }
@@ -672,6 +685,7 @@ class Simple: UIViewController {
         matchID.text = "No Match Selected"
         
         rematch.isHidden = true
+        quitInTurn.isHidden = true
     }
 
     func dataToStringArray(data: Data) -> [String]? {
@@ -716,15 +730,20 @@ class Simple: UIViewController {
         }
     }
 
-    func nextParticipantsForMatch(_ match: GKTurnBasedMatch) -> [GKTurnBasedParticipant] {
+    func nextParticipantsForMatch(_ match: GKTurnBasedMatch, didQuit: Bool = false) -> [GKTurnBasedParticipant] {
         var foundCurrentParticipant = false
         var tail = [GKTurnBasedParticipant]()
         var head = [GKTurnBasedParticipant]()
         for participant in match.participants {
             guard participant != match.currentParticipant else {
+
                 // Current partitipant is last element in tail.
                 // Following participants are added to the head.
-                tail.append(participant)
+                
+                if !didQuit {
+                    tail.append(participant)
+                }
+                
                 foundCurrentParticipant = true
                 continue
             }
@@ -852,15 +871,15 @@ extension Simple: GKLocalPlayerListener {
 
     /// Calling this will forfeit the match by ending the current turn and passing the turn to the next
     /// player who wins by walkover.
+    ///
+    /// This may be called by the player or by the game logic.
     func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
         print("Wants to quit match \(match.matchID)!")
 
-        let opponent = match.participants.filter { (player) -> Bool in
-            player != GKLocalPlayer.local
-        }
+        let nextUp = nextParticipantsForMatch(match, didQuit: true)
         
         // Pass the match to the next player by calling
-        match.participantQuitInTurn(with: .quit, nextParticipants: opponent, turnTimeout: turnTimeout, match: data) { (error) in
+        match.participantQuitInTurn(with: .quit, nextParticipants: nextUp, turnTimeout: turnTimeout, match: data) { (error) in
             if let receivedError = error {
                 print("Failed to quit match \(match.matchID) with error: \(receivedError)")
             } else {
