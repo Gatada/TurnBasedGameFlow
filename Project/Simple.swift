@@ -95,7 +95,11 @@ class Simple: UIViewController {
         return opponent
     }
     
-    var currentMatch: GKTurnBasedMatch? = nil
+    var currentMatch: GKTurnBasedMatch? = nil {
+        didSet {
+            print("Current match was updated..")
+        }
+    }
     
     // MARK: - Life Cycle
 
@@ -233,7 +237,7 @@ class Simple: UIViewController {
         let turnTimeout: TimeInterval = 120 // seconds
         
         func sendExchange(to recipient: GKTurnBasedParticipant) {
-            currentMatch?.sendExchange(to: [recipient], data: data, localizableMessageKey: "Do you want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
+            currentMatch?.sendExchange(to: [recipient], data: data, localizableMessageKey: "You can decide now or ignore it, however it will timeout in \(turnTimeout) seconds.", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
                 if let receivedError = error {
                     print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
                     self?.handleError(receivedError)
@@ -413,6 +417,13 @@ class Simple: UIViewController {
                 
                 self?.currentMatch?.endTurn(withNextParticipants: nextParticipants, turnTimeout: timeout, match: updatedData) { [weak self] error in
                     if let receivedError = error {
+                        
+                        if (receivedError as NSError).code == 3 {
+                            // This error seems to indicate that
+                            print("Re-try to end turn?")
+                            print(receivedError.localizedDescription)
+                        }
+                            
                         print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
                         self?.handleError(receivedError)
                         return
@@ -963,6 +974,8 @@ extension Simple: GKLocalPlayerListener {
         
         assert(Thread.isMainThread)
         
+        print("\n\nTURN EVENT RECEIVED!\n\n")
+        
         if didBecomeActive {
             
             // Present the game whenever didBecomeActive is true.
@@ -1013,11 +1026,7 @@ extension Simple: GKLocalPlayerListener {
         
             print("Turn event received for another match.")
                         
-            let opponent = match.participants.filter { (player) -> Bool in
-                player.player != GKLocalPlayer.local
-            }.first
-            
-            let alert = UIAlertController(title: "It's your turn in a game against \(opponent?.player?.displayName ?? "N/A")!", message: "Do you want to jump to that match?", preferredStyle: .alert)
+            let alert = UIAlertController(title: "A turn was taken in another match.", message: "Do you want to jump to that match?", preferredStyle: .alert)
             let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
                 print("Player chose to go to match \(match.matchID)")
                 self?.currentMatch = match
@@ -1085,6 +1094,8 @@ extension Simple: GKLocalPlayerListener {
         // Hmm... Is this simply received to update the game on the client side?
         // As merging data from here seems to always result in an error.
         
+        print("RECEIVED EXHANGE REPLIES!")
+        
         if alert != nil {
             self.dismiss(animated: true) {
                 print("Dismissed alert")
@@ -1105,14 +1116,19 @@ extension Simple: GKLocalPlayerListener {
             }
         }
 
-        try? mergeExchangesAsNeeded { [weak self] error in
-            if let receivedError = error {
-                print("Failed to save merged data from exchanges:")
-                self?.handleError(receivedError)
-            } else {
-                print("Successfully merged data from exchanges!")
-                self?.refreshInterface()
-                self?.view.throb()
+        // If the replies were received by current participant, we might just as well
+        // merge the exchange data with the match data right away:
+        
+        if match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID {
+            try? mergeExchangesAsNeeded { [weak self] error in
+                if let receivedError = error {
+                    print("Failed to save merged data from exchanges:")
+                    self?.handleError(receivedError)
+                } else {
+                    print("Successfully merged data from exchanges!")
+                    self?.refreshInterface()
+                    self?.view.throb()
+                }
             }
         }
     }
@@ -1148,8 +1164,13 @@ extension Simple: GKLocalPlayerListener {
             self?.replyToExchange(exchange, accepted: true)
             self?.refreshInterface()
         }
-        
-        let decline = UIAlertAction(title: "Ignore", style: .destructive) { [weak self] action in
+
+        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self] action in
+            self?.replyToExchange(exchange, accepted: false)
+            self?.refreshInterface()
+        }
+
+        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self] action in
 
             // I am starting to think that declining an exchange simply
             // means to let it time out.
@@ -1160,6 +1181,7 @@ extension Simple: GKLocalPlayerListener {
         
         alert.addAction(accept)
         alert.addAction(decline)
+        alert.addAction(ignore)
 
         self.present(alert, animated: true) {
             print("Presented exhange")
