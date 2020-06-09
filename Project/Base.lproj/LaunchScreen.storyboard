@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -90,14 +91,6 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DAa-gk-NiR">
-                                        <rect key="frame" x="114.5" y="398.5" width="102" height="50"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="50" id="BHY-fX-eR3"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="21"/>
-                                        <state key="normal" title="End Match"/>
-                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
@@ -113,7 +106,6 @@
                                     <constraint firstItem="97H-A8-tuX" firstAttribute="leading" secondItem="cTa-lK-hTi" secondAttribute="leading" id="ES5-Y1-bhD"/>
                                     <constraint firstItem="Fuh-dx-39r" firstAttribute="centerY" secondItem="Ssx-8n-YqU" secondAttribute="centerY" id="GhM-NL-rSa"/>
                                     <constraint firstItem="97H-A8-tuX" firstAttribute="leading" secondItem="bz7-9W-v0X" secondAttribute="trailing" constant="8" id="Iym-O0-pJl"/>
-                                    <constraint firstItem="DAa-gk-NiR" firstAttribute="centerX" secondItem="IcO-t0-eRD" secondAttribute="centerX" id="LDW-j2-oda"/>
                                     <constraint firstItem="yqT-wb-wLN" firstAttribute="top" secondItem="Ssx-8n-YqU" secondAttribute="bottom" constant="8" id="Nj2-rZ-SqY"/>
                                     <constraint firstItem="Ssx-8n-YqU" firstAttribute="leading" secondItem="cTa-lK-hTi" secondAttribute="leading" id="OfY-l5-Elg"/>
                                     <constraint firstItem="VR8-18-Ad4" firstAttribute="leading" secondItem="IcO-t0-eRD" secondAttribute="leading" id="PRT-2k-pgm"/>
@@ -132,7 +124,6 @@
                                     <constraint firstItem="0Ur-hY-qoM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="IcO-t0-eRD" secondAttribute="leading" constant="20" symbolic="YES" id="kgr-JA-CZx"/>
                                     <constraint firstItem="OQH-5q-aKy" firstAttribute="leading" secondItem="cTa-lK-hTi" secondAttribute="leading" id="mDv-Ko-bqe"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yqT-wb-wLN" secondAttribute="trailing" constant="20" symbolic="YES" id="pQs-tt-kzC"/>
-                                    <constraint firstItem="DAa-gk-NiR" firstAttribute="top" secondItem="VR8-18-Ad4" secondAttribute="bottom" id="qQB-9r-ecg"/>
                                     <constraint firstItem="Fuh-dx-39r" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="IcO-t0-eRD" secondAttribute="leading" constant="20" symbolic="YES" id="rjR-1E-YM4"/>
                                     <constraint firstItem="bz7-9W-v0X" firstAttribute="centerY" secondItem="97H-A8-tuX" secondAttribute="centerY" id="s7C-Jc-HVa"/>
                                     <constraint firstItem="DfM-Wu-m5c" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="IcO-t0-eRD" secondAttribute="leading" constant="20" symbolic="YES" id="sWL-4S-M0X"/>

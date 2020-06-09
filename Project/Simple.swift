@@ -818,9 +818,8 @@ extension Simple: GKLocalPlayerListener {
         // Hmm... Is this simply received to update the game on the client side?
         // As merging data from here seems to always result in an error.
         
-        print("RECEIVED REPLIES: Exchange \(exchange.exchangeID) completed.")
-        assert(localParticipant?.player == match.currentParticipant?.player, "A player other than the current participant received exchange replies.")
-
+        print("\nREPLIES FOR EXCHANGE \(exchange.exchangeID)")
+        
         if alert != nil {
             self.dismiss(animated: true) {
                 print("Dismissed alert")
@@ -830,12 +829,13 @@ extension Simple: GKLocalPlayerListener {
         
         // The exchange is ready for processing: all invitees have responded.
         
-        print("Status : \(stringForExchangeStatus(exchange.status))")
-        print("Local  : \(GKLocalPlayer.local.alias)")
-        print("Creator: \(player.alias)")
-        print("Invitee: \(exchange.recipients.first?.player?.alias ?? "N/A")\n")
-        print("Received \(replies.count) exchange replies")
-        print("Current player \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.")
+        print("Match   : \(match.matchID) is \(stringForMatchStatus(match.status))")
+        print("Exchange: \(stringForExchangeStatus(exchange.status))")
+        print("Local   : \(GKLocalPlayer.local.alias)")
+        print("Creator : \(player.alias)")
+        print("Invitee : \(exchange.recipients.first?.player?.alias ?? "N/A")")
+        print("Replies : \(replies.count)")
+        print("Resolve : \(match.currentParticipant?.player?.alias ?? "N/A") will resolve the data.\n")
             
         var count = 0
         for reply in replies {
@@ -844,7 +844,13 @@ extension Simple: GKLocalPlayerListener {
             count += 1
         }
         
-        self.mergeMatch(match, with: data, for: [exchange], closure: nil)
+        if localParticipant?.player == match.currentParticipant?.player {
+            print("\nCurrent participant \(match.currentParticipant?.player?.alias ?? "N/A") recevied exchange replies and will merge the match data.\n")
+            self.mergeMatch(match, with: data, for: [exchange], closure: nil)
+        } else {
+            print("\nExchange reply recipient \(localParticipant?.player?.alias ?? "N/A") is not current participant, therefore cannot merge match data.\n")
+        }
+        
         self.refreshInterface()
     }
 
