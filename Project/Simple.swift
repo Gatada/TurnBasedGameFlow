@@ -629,7 +629,14 @@ class Simple: UIViewController {
     
     
     func dismissAlert(ofType dismissableType: AlertType) {
-        if let presented = alertQueue.first, presented.type == dismissableType, presented.alert.isViewLoaded && presented.alert.view.window != nil {
+        if let presented = alertQueue.first, presented.type == dismissableType {
+            
+            let alertIsVisible = presented.alert.isViewLoaded && presented.alert.view.window != nil
+            guard alertIsVisible else {
+                assertionFailure("Tried to dismiss an alert that is not visible")
+                return
+            }
+            
             self.dismiss(animated: true) { [weak self] in
                 self?.advanceAlertQueueIfNeeded()
             }
