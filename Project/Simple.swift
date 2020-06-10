@@ -350,43 +350,7 @@ class Simple: UIViewController {
         }
     }
     
-
-    
-    func mergeExchangesAsNeeded(closure: @escaping (Error?)->Void) throws {
-        
-        guard let match = currentMatch else {
-            print("No match to merge exchanges with")
-            return
-        }
-
-        guard let exchanges = match.exchanges else {
-            // There are no open exchanges that will prevent turn and game from ending.
-            closure(nil)
-            return
-        }
-
-        guard match.activeExchanges == nil || (match.activeExchanges?.count == 0 && exchanges.count > 0) else {
-            throw MatchUpdateError.waitingForActiveExchangesToComplete
-        }
-
-        print("Saving merged matchData.")
-        
-        // This is where I imagine we merge the exchange data with the match data.
-        let updatedGameData = data
-        
-        match.saveMergedMatch(updatedGameData, withResolvedExchanges: exchanges) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to save merged data from \(exchanges.count) exchanges:")
-                self?.handleError(receivedError)
-                closure(receivedError)
-            } else {
-                print("Successfully merged data from \(exchanges.count) exchanges!")
-                self?.refreshInterface()
-                closure(nil)
-            }
-        }
-    }
-    
+   
     @IBAction func endTurnTap(_ sender: Any) {
         
         do {
@@ -828,8 +792,41 @@ class Simple: UIViewController {
         }
     }
     
+    func mergeExchangesAsNeeded(closure: @escaping (Error?)->Void) throws {
+        
+        guard let match = currentMatch else {
+            print("No match to merge exchanges with")
+            return
+        }
+        
+        guard let exchanges = match.completedExchanges else {
+            // There are no completed exchanges to merge with match data, so
+            // just call the closure.
+            closure(nil)
+            return
+        }
+        
+        print("Saving merged matchData.")
+        
+        // This is where I imagine we merge the exchange data with the match data.
+        let updatedGameData = data
+        
+        match.saveMergedMatch(updatedGameData, withResolvedExchanges: exchanges) { [weak self] error in
+            if let receivedError = error {
+                print("Failed to save merged data from \(exchanges.count) exchanges:")
+                self?.handleError(receivedError)
+                closure(receivedError)
+            } else {
+                print("Successfully merged data from \(exchanges.count) exchanges!")
+                self?.refreshInterface()
+                closure(nil)
+            }
+        }
+    }
+    
+    
     func printDetailsForExchange(_ exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch, with player: GKPlayer) {
-        print("\nREPLIES FOR EXCHANGE \(exchange.exchangeID)")
+        print("\nDETAILS FOR EXCHANGE \(exchange.exchangeID)")
         print("Match   : \(match.matchID) is \(stringForMatchStatus(match.status))")
         print("Exchange: \(stringForExchangeStatus(exchange.status))")
         print("Message : \(exchange.message ?? "")")
@@ -1156,7 +1153,12 @@ extension Simple: GKLocalPlayerListener {
         let message = exchange.message ?? "Accept the exhange or ignore it for now."
         print("\nReceived exchange \(exchange.exchangeID) from \(player.displayName) for match \(match.matchID)")
         
-        printDetailsForExchange(exchange, for: match, with: player)
+        guard let sender = exchange.sender.player else {
+            print("Echange request has no sender!")
+            return
+        }
+
+        printDetailsForExchange(exchange, for: match, with: sender)
         
         let alert = UIAlertController(title: "Accept exchange with \(player.displayName)?", message: message, preferredStyle: .alert)
         
