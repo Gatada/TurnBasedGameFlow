@@ -29,7 +29,8 @@ enum AlertType: Int {
     case exchangeCancellationNotification = 300
     
     // Context Sensitive
-    case waitingForExchangeReplies = 200
+    case creatingExchange = 200
+    case waitingForExchangeReplies
     case respondingToExchange
     case matchContextSensitive
     
@@ -305,9 +306,7 @@ class Simple: UIViewController {
         }
         alert.addAction(cancel)
         
-        self.present(alert, animated: true) {
-            print("Presented \(alert.actions.count) available participants for the exchange.")
-        }
+        presentOrQueueAlert(alert, ofType: .creatingExchange)
     }
     
     
@@ -630,7 +629,7 @@ class Simple: UIViewController {
     
     
     func dismissAlert(ofType dismissableType: AlertType) {
-        if let presented = alertQueue.first, presented.type == dismissableType {
+        if let presented = alertQueue.first, presented.type == dismissableType, presented.alert.isViewLoaded && presented.alert.view.window != nil {
             self.dismiss(animated: true) { [weak self] in
                 self?.advanceAlertQueueIfNeeded()
             }
@@ -681,10 +680,12 @@ class Simple: UIViewController {
     /// - Important: This should be called at the end of any action associated with a queued alert.
     func advanceAlertQueueIfNeeded() {
         guard !alertQueue.isEmpty else {
-            assertionFailure("""
-                Unexpected: queue should not be empty when this is called.
-                Do not present alerts, instead queue them by calling Simple.queueAlert(_:isContextSensitive:).
-                """)
+            print("No currently visible alerts.")
+            return
+        }
+        
+        guard alertQueue.first?.alert.isBeingPresented == false else {
+            assertionFailure("Dequeued an alert that is still being presented.")
             return
         }
         
@@ -737,11 +738,6 @@ class Simple: UIViewController {
         print(message)
         
         presentOrQueueAlert(alert)
-
-        self.present(alert, animated: true) {
-            print("Presented error alert")
-            self.refreshInterface()
-        }
     }
     
     func resetInterface() {
@@ -890,7 +886,7 @@ class Simple: UIViewController {
         }
         
         alert.addAction(cancel)
-        self.presentOrQueueAlert(alert)
+        self.presentOrQueueAlert(alert, ofType: .waitingForExchangeReplies)
     }
     
     func mergeExchangesAsNeeded(closure: @escaping (Error?)->Void) throws {
