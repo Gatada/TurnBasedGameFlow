@@ -916,8 +916,13 @@ class Simple: UIViewController {
         
         // print("Saving merged matchData.")
         
-        // This is where I imagine we merge the exchange data with the match data.
-        let updatedGameData = data
+        // Maybe if the match data has not actually changed, it will not trigger
+        // a turn event to the other or current player?
+        
+        guard let updatedGameData = stringArrayToData(stringArray: [Date().description]) else {
+            print("Failed to merge match data")
+            return
+        }
         
         match.saveMergedMatch(updatedGameData, withResolvedExchanges: exchanges) { [weak self] error in
             if let receivedError = error {
@@ -1108,6 +1113,19 @@ extension Simple: GKLocalPlayerListener {
     }
 
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
+        
+        // In the header files it says:
+        // called when it becomes this player's turn.  It also gets called under the following conditions:
+        //      the player's turn has a timeout and it is about to expire.
+        //      the player accepts an invite from another player.
+        // when the game is running it will additionally recieve turn events for the following:
+        //      turn was passed to another player
+        //      another player saved the match data
+        // Because of this the app needs to be prepared to handle this even while the player is taking a turn in an existing match.  The boolean indicates whether this event launched or brought to forground the app.
+        //
+        // However, there is no event received when the sender of a GKTurnBasedExchange successfully merges game data.
+        
+        
         
         assert(Thread.isMainThread)
         
