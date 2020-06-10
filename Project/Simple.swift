@@ -221,7 +221,7 @@ class Simple: UIViewController {
         opponentStatus.text = aggrigateStatus
         opponentOutcome.text = aggrigateOutcome
         
-        exchangeHistory.text = "\(match.activeExchanges?.count ?? 0) active / \(match.exchanges?.count ?? 0) total"
+        exchangeHistory.text = "\(match.activeExchanges?.count ?? 0) active / \(match.completedExchanges?.count ?? 0) completed / \(match.exchanges?.count ?? 0) total"
         
         // Now check if game is over:
         print("Game is \(gameEnded ? "over" : "active").")
