@@ -1116,16 +1116,14 @@ extension Simple: GKLocalPlayerListener {
         // If the replies were received by current participant, we might just as well
         // merge the exchange data with the match data right away:
         
-        if match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID {
-            try? mergeExchangesAsNeeded { [weak self] error in
-                if let receivedError = error {
-                    print("Failed to save merged data from exchanges:")
-                    self?.handleError(receivedError)
-                } else {
-                    print("Successfully merged data from exchanges!")
-                    self?.refreshInterface()
-                    self?.view.throb()
-                }
+        try? mergeExchangesAsNeeded { [weak self] error in
+            if let receivedError = error {
+                print("Failed to save merged data from exchanges:")
+                self?.handleError(receivedError)
+            } else {
+                print("Successfully merged data from exchanges!")
+                self?.refreshInterface()
+                self?.view.throb()
             }
         }
     }
