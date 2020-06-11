@@ -47,7 +47,9 @@ class Simple: UIViewController {
     @IBOutlet weak var versionBuild: UILabel!
     
     
-    // MARK: - Properties
+    // MARK: - PROPERTIES
+    
+    private var alertManager: AlertManager?
     
     /// An audio player that plays a single sound.
     private var player: AVAudioPlayer?
@@ -61,9 +63,6 @@ class Simple: UIViewController {
     var matchData: Data?
     
     weak var matchMakerController: GKTurnBasedMatchmakerViewController?
-    
-    /// Used to retain alerts created while there is already an alert on screen.
-    var alertQueue = [QueuedAlert]()
     
     /// Returns `true` if the local player has been authenticated, `false` otherwise.
     public var localPlayerIsAuthenticated: Bool {
@@ -108,7 +107,7 @@ class Simple: UIViewController {
         }
     }
     
-    // MARK: - Life Cycle
+    // MARK: - LIFE CYCLE
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,6 +116,7 @@ class Simple: UIViewController {
         prepareAudio()
         resetInterface()
         versionBuild.text = AppDelegate.versionBuild
+        alertManager = AlertManager(presenter: self)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -125,7 +125,7 @@ class Simple: UIViewController {
     }
     
     
-    // MARK: - Setup
+    // MARK: - SETUP
     
     func setupGameCenter() {
         // Registering the GKLocalPlayerListener to receive all events.
@@ -134,7 +134,7 @@ class Simple: UIViewController {
     }
     
     
-    // MARK: - Interface
+    // MARK: - INTERFACE
     
     func refreshInterface() {
         
@@ -206,7 +206,7 @@ class Simple: UIViewController {
         // print("Game is \(gameEnded ? "over" : "active").")
     }
 
-    // MARK: - User Interaction
+    // MARK: - USER INTERACTION
     
     @IBAction func quitMatchInTurnTap(_ sender: Any) {
         guard let match = currentMatch else {
@@ -237,13 +237,18 @@ class Simple: UIViewController {
     @IBAction func beginExchangeTap(_ sender: Any) {
         // print("Tapped to begin Exchange")
         
+        guard let alertManager = alertManager else {
+            assertionFailure("No AlertManager has been initialized")
+            return
+        }
+        
         guard let match = currentMatch else {
-            // print("No match selected")
+            assertionFailure("No match set. This button should've been disabled.")
             return
         }
 
         let alert = tradeAlertForMatch(match)
-        presentOrQueueAlert(alert, ofType: .creatingExchange)
+        alertManager.presentOrQueueAlert(alert, ofType: .creatingExchange)
     }
     
     
@@ -451,7 +456,7 @@ class Simple: UIViewController {
         }
     }
     
-    // MARK: - Audio
+    // MARK: - AUDIO
     
     func prepareAudio() {
         let filename = "Simple"
@@ -481,7 +486,7 @@ class Simple: UIViewController {
         }
     }
     
-    // MARK: - Game Center
+    // MARK: - GAME CENTER
     
     func authenticatePlayer() {
         GKLocalPlayer.local.authenticateHandler = { [weak self] (controller: UIViewController?, error: Error?) -> Void in
@@ -544,93 +549,7 @@ class Simple: UIViewController {
         return request
     }
     
-    // MARK: - Helpers
-    
-    /// Call to have presented alert dismissed iff it is of the correct type.
-    ///
-    /// Checks the type of the first alert in the queue, then verifies that it is indeed visible
-    /// before dismissing it with an animation and advancing the alert queue if needed.
-    func dismissAlert(ofType dismissableType: AlertType) {
-        if let presented = alertQueue.first, presented.type == dismissableType {
-            
-            let alertIsVisible = presented.alert.isViewLoaded && presented.alert.view.window != nil
-            guard alertIsVisible else {
-                assertionFailure("Tried to dismiss an alert that is not visible")
-                return
-            }
-            
-            self.dismiss(animated: true) { [weak self] in
-                self?.advanceAlertQueueIfNeeded()
-            }
-        }
-    }
-    
-    /// Adds the passed alert to the queue.
-    ///
-    /// If the alert is context sensitive, by for example being relevant for the currently showing match,
-    /// the `isContextSensitive` should be `true`. This results in the alert being added as the
-    /// second alert in the queue (making it the next-up alert).
-    /// - Parameters:
-    ///   - alert: The alert controller to queue.
-    ///   - isContextSensitive: If `true` the alert will be shown next, otherwise last.
-    func presentOrQueueAlert(_ alert: UIAlertController, ofType type: AlertType = .informative) {
-        
-        if alertQueue.isEmpty {
-            self.present(alert, animated: true) { [weak self] in
-                self?.alertQueue.append((type, alert))
-            }
-        } else {
-            
-            // Already showing an alert.
-            // Add new alert to queue.
-            //
-            // The queue is advanced when visible alert calls
-            // Simple.advanceAlertQueueIfNeeded() as part of its available
-            // actions.
-
-            let unqueuedAlert: QueuedAlert = (type, alert)
-            
-            if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < type.priority }) {
-                // Found entry with lower priority than unqueued alert.
-                // Inserting alert at this location so it'll be presented first.
-                alertQueue.insert(unqueuedAlert, at: insertIndex)
-                // print("Inserted alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" at index \(insertIndex).")
-            } else {
-                // No queued alert found with lower priority then unqeued alert.
-                // Appending alert to the end of the queue
-                alertQueue.append(unqueuedAlert)
-                // print("Appended alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" to end of queue.")
-            }
-        }
-    }
-    
-    /// Displays the alert controller that is next in the queue.
-    ///
-    /// - Important: This should be called at the end of any action associated with a queued alert.
-    func advanceAlertQueueIfNeeded() {
-        guard !alertQueue.isEmpty else {
-            // print("No currently visible alerts.")
-            return
-        }
-        
-        guard alertQueue.first?.alert.isBeingPresented == false else {
-            assertionFailure("Dequeued an alert that is still being presented.")
-            return
-        }
-        
-        alertQueue.removeFirst()
-        
-        guard let nextUp = alertQueue.first else {
-            // print("No more queued alerts to present.")
-            return
-        }
-        
-        self.present(nextUp.alert, animated: true) { [weak self] in
-            let queuedAlertCount = self?.alertQueue.count ?? 0
-            let alertCaption = "\"\(nextUp.alert.title ?? nextUp.alert.message ?? "an empty alert")\""
-            print("Presented \(alertCaption) alert from queue (\(queuedAlertCount - 1) remaining).")
-        }
-    }
+    // MARK: - HELPERS
     
     func handleError(_ error: Error) {
         
@@ -658,10 +577,12 @@ class Simple: UIViewController {
     }
     
     func presentErrorWithMessage(_ message: String, title: String = "Received Error") {
-        let alert = Utility.alert(title, message: message) { [weak self] in
-            self?.advanceAlertQueueIfNeeded()
+        
+        let alert = Utility.alert(title, message: message) { [weak alertManager] in
+            alertManager?.advanceAlertQueueIfNeeded()
         }
-        presentOrQueueAlert(alert)
+        
+        alertManager?.presentOrQueueAlert(alert)
     }
     
     func resetInterface() {
@@ -784,6 +705,10 @@ class Simple: UIViewController {
     
     // MARK: Exchange Related
     
+    func ignore(_ exchange: GKTurnBasedExchange) {
+        replyToExchange(exchange, accepted: nil)
+    }
+    
     func replyToExchange(_ exchange: GKTurnBasedExchange, accepted: Bool?) {
         
         let argument: String
@@ -828,23 +753,24 @@ class Simple: UIViewController {
                 }
                 self?.refreshInterface()
             }
-            self?.advanceAlertQueueIfNeeded()
+            self?.alertManager?.advanceAlertQueueIfNeeded()
         }
         
         alert.addAction(cancel)
-        self.presentOrQueueAlert(alert, ofType: .waitingForExchangeReplies)
+        alertManager?.presentOrQueueAlert(alert, ofType: .waitingForExchangeReplies)
     }
     
     func mergeCompletedExchangesAsNeeded(resolvedData: Data, closure: @escaping (Error?)->Void) {
         
         guard let match = currentMatch else {
-            // print("No match to merge exchanges with")
+            assertionFailure("No match to merge exchanges with")
             return
         }
         
         guard let exchanges = match.completedExchanges else {
             // There are no completed exchanges to merge with match data, so
             // just call the closure.
+            print("Found no completed exchanges to save!")
             closure(nil)
             return
         }
@@ -856,12 +782,9 @@ class Simple: UIViewController {
         
         match.saveMergedMatch(resolvedData, withResolvedExchanges: exchanges) { [weak self] error in
             if let receivedError = error {
-                // print("Failed to save merged data from \(exchanges.count) exchanges:")
                 self?.handleError(receivedError)
                 closure(receivedError)
             } else {
-                // print("Successfully merged data from \(exchanges.count) exchanges!")
-                self?.refreshInterface()
                 closure(nil)
             }
         }
@@ -871,7 +794,7 @@ class Simple: UIViewController {
     func printDetailsForExchange(_ exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch, with player: GKPlayer) {
         print( """
             Match   : \(match.matchID) is \(stringForMatchStatus(match.status))
-            Exchange: \(exchange.exchangeID)")
+            Exchange: \(exchange.exchangeID)
             Status  : \(stringForExchangeStatus(exchange.status))
             Message : \(exchange.message ?? "")
             Local   : \(GKLocalPlayer.local.displayName)
@@ -880,6 +803,21 @@ class Simple: UIViewController {
             Replies : \(exchange.replies?.count ?? 0)
             Resolve : \(match.currentParticipant?.player?.displayName ?? "N/A") will resolve the data.\n
             """)
+        
+        guard let replies = exchange.replies else {
+            return
+        }
+        
+        for reply in replies {
+            guard let exchangeResponse = reply.data else {
+                print("Reply has no data!")
+                continue
+            }
+            if let array = dataToStringArray(data: exchangeResponse), let response = array.first {
+                print("Exchange was \(response) by \(reply.recipient.player?.displayName ?? "N/A")!")
+            }
+        }
+
     }
 }
 
@@ -1000,8 +938,8 @@ extension Simple: GKLocalPlayerListener {
         
         if alreadyViewingMatch {
             
-            let ok = UIAlertAction(title: "OK", style: .cancel) { [weak self] _ in
-                self?.advanceAlertQueueIfNeeded()
+            let ok = UIAlertAction(title: "OK", style: .cancel) { [weak alertManager] _ in
+                alertManager?.advanceAlertQueueIfNeeded()
             }
             
             alert.addAction(ok)
@@ -1011,24 +949,24 @@ extension Simple: GKLocalPlayerListener {
             self.currentMatch = match
             self.refreshInterface()
             
-            self.presentOrQueueAlert(alert, ofType: .matchContextSensitive)
+            alertManager?.presentOrQueueAlert(alert, ofType: .matchContextSensitive)
             
         } else {
-            let jump = UIAlertAction(title: "See Result", style: .default) { [weak self] _ in
+            let jump = UIAlertAction(title: "See Result", style: .default) { [weak self, weak alertManager] _ in
                 // print("Player chose to go to match \(match.matchID)")
                 self?.currentMatch = match
                 self?.refreshInterface()
-                self?.advanceAlertQueueIfNeeded()
+                alertManager?.advanceAlertQueueIfNeeded()
             }
-            let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
                 // print("Player did not want to go to match \(match.matchID)")
-                self?.advanceAlertQueueIfNeeded()
+                alertManager?.advanceAlertQueueIfNeeded()
             }
             
             alert.addAction(jump)
             alert.addAction(ignore)
             
-            self.presentOrQueueAlert(alert, ofType: .alteringMatchContext)
+            alertManager?.presentOrQueueAlert(alert, ofType: .alteringMatchContext)
         }
     }
 
@@ -1080,21 +1018,21 @@ extension Simple: GKLocalPlayerListener {
                 self.player(sender, receivedExchangeRequest: exchange, for: match)
             }
             
-            guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-                print("Failed to merge match data")
-                return
-            }
-            
-            mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-                if let receivedError = error {
-                    print("Failed to save merged data from exchanges:")
-                    self?.handleError(receivedError)
-                } else {
-                    print("Successfully merged data from exchanges!")
-                    self?.refreshInterface()
-                    self?.view.throb(duration: 0.05, toScale: 0.85)
-                }
-            }
+            // guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
+            //     print("Failed to merge match data")
+            //     return
+            // }
+            //
+            // mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
+            //     if let receivedError = error {
+            //         print("Failed to save merged data from exchanges:")
+            //         self?.handleError(receivedError)
+            //     } else {
+            //         print("Successfully merged data from exchanges!")
+            //         self?.refreshInterface()
+            //         self?.view.throb(duration: 0.05, toScale: 0.85)
+            //     }
+            // }
             
         } else  if match.matchID == self.currentMatch?.matchID {
             
@@ -1106,9 +1044,10 @@ extension Simple: GKLocalPlayerListener {
         
         } else {
         
-            // print("Turn event received for another match.")
+            // Attention is required for another match.
+
             let alert = alertForTurnTaken(in: match)
-            self.presentOrQueueAlert(alert, ofType: .alteringMatchContext)
+            alertManager?.presentOrQueueAlert(alert, ofType: .alteringMatchContext)
         }
         
         // print("\nReceived turn event for match \(match.matchID) \(match.matchData == nil ? "without" : "with \(match.matchData!.count) bytes") data.\nDid become active: \(didBecomeActive)\n")
@@ -1168,22 +1107,11 @@ extension Simple: GKLocalPlayerListener {
 
             """)
 
-        dismissAlert(ofType: .waitingForExchangeReplies)
-        
+        alertManager?.dismissAlert(ofType: .waitingForExchangeReplies)
         currentMatch = match
         
         // The exchange is ready for processing: all invitees have responded.
         printDetailsForExchange(exchange, for: match, with: player)
-            
-        for reply in replies {
-            guard let exchangeResponse = reply.data else {
-                print("Reply has no data!")
-                continue
-            }
-            if let array = dataToStringArray(data: exchangeResponse), let response = array.first {
-                print("Exchange was \(response)!")
-            }
-        }
 
         // If the replies were received by current participant, we might just as well
         // merge the exchange data with the match data right away:
@@ -1218,11 +1146,11 @@ extension Simple: GKLocalPlayerListener {
         // print("\nExchange creator \(exchange.sender.player?.displayName ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
         
         let sender = exchange.sender.player?.displayName ?? "unknown sender"
-        let alert = Utility.alert("Exchange with \(sender) was cancelled", message: nil) { [weak self] in
-            self?.advanceAlertQueueIfNeeded()
+        let alert = Utility.alert("Exchange with \(sender) was cancelled", message: nil) { [weak alertManager] in
+            alertManager?.advanceAlertQueueIfNeeded()
         }
-        presentOrQueueAlert(alert, ofType: .exchangeCancellationNotification)
-        dismissAlert(ofType: .respondingToExchange)
+        alertManager?.presentOrQueueAlert(alert, ofType: .exchangeCancellationNotification)
+        alertManager?.dismissAlert(ofType: .respondingToExchange)
         
         // Reload match data
         refreshInterface()
@@ -1241,7 +1169,7 @@ extension Simple: GKLocalPlayerListener {
         currentMatch = match
         
         guard let data = exchange.data, let payload: [String: String] = codableInstance(from: data) else {
-            assertionFailure("Exchange missing data")
+            print("Exchange missing data!")
             return
         }
         
@@ -1250,8 +1178,7 @@ extension Simple: GKLocalPlayerListener {
             // This exchange is intended for another player, so it is ignored
             // by sending nil as accepted status.
             
-            // replyToExchange(exchange, accepted: nil)
-            
+            ignore(exchange)
             currentMatch = match
             
             refreshInterface()
@@ -1271,32 +1198,32 @@ extension Simple: GKLocalPlayerListener {
         
         let alert = UIAlertController(title: "Accept exchange with \(player.displayName)?", message: message, preferredStyle: .alert)
         
-        let accept = UIAlertAction(title: "Accept", style: .default) { [weak self] action in
+        let accept = UIAlertAction(title: "Accept", style: .default) { [weak self, weak alertManager] action in
             self?.replyToExchange(exchange, accepted: true)
             self?.refreshInterface()
-            self?.advanceAlertQueueIfNeeded()
+            alertManager?.advanceAlertQueueIfNeeded()
         }
 
-        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self] action in
+        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self, weak alertManager] action in
             self?.replyToExchange(exchange, accepted: false)
             self?.refreshInterface()
-            self?.advanceAlertQueueIfNeeded()
+            alertManager?.advanceAlertQueueIfNeeded()
         }
 
-        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self] action in
+        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self, weak alertManager] action in
             
             // There is no way to cancel a received request.
             // Either reply with a decline or let the request time-out.
             
             self?.refreshInterface()
-            self?.advanceAlertQueueIfNeeded()
+            alertManager?.advanceAlertQueueIfNeeded()
         }
         
         alert.addAction(accept)
         alert.addAction(decline)
         alert.addAction(ignore)
 
-        presentOrQueueAlert(alert, ofType: .respondingToExchange)
+        alertManager?.presentOrQueueAlert(alert, ofType: .respondingToExchange)
     }
 
 
@@ -1322,18 +1249,37 @@ extension Simple: GKLocalPlayerListener {
 extension Simple {
     
     func alertForTurnTaken(in match: GKTurnBasedMatch) -> UIAlertController {
-        let names = Utility.opponentNamesForMatch(match)
         
-        let alert = UIAlertController(title: "A turn was taken in a match with \(names).", message: "Do you want to jump to that match?", preferredStyle: .alert)
-        let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
+        let title: String
+        let message: String
+        
+        let names = Utility.opponentNamesForMatch(match)
+        let isTurnHolder = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
+        let isReminder = match.matchData == currentMatch?.matchData
+        
+        if isTurnHolder && isReminder {
+            title = "Please take your turn!"
+            message = "\(names) reminded you to take your turn."
+        
+        } else if isTurnHolder {
+            title = "It's your turn!"
+            message = "You are the turn holder in a match with \(names)."
+            
+        } else {
+            title = "Match Updated"
+            message = "An action was taken in a match with \(names)."
+        }
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self, weak alertManager] _ in
             // print("Player chose to go to match \(match.matchID)")
             self?.currentMatch = match
             self?.refreshInterface()
-            self?.advanceAlertQueueIfNeeded()
+            alertManager?.advanceAlertQueueIfNeeded()
         }
-        let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+        let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
             // print("Player did not want to go to match \(match.matchID)")
-            self?.advanceAlertQueueIfNeeded()
+            alertManager?.advanceAlertQueueIfNeeded()
         }
         alert.addAction(jump)
         alert.addAction(ignore)
@@ -1350,16 +1296,16 @@ extension Simple {
                 continue
             }
             
-            let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self] _ in
+            let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self, weak alertManager] _ in
                 self?.sendExchange(for: match, to: participant)
-                self?.advanceAlertQueueIfNeeded()
+                alertManager?.advanceAlertQueueIfNeeded()
             }
             
             alert.addAction(recipient)
         }
         
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-            self?.advanceAlertQueueIfNeeded()
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
+            alertManager?.advanceAlertQueueIfNeeded()
         }
 
         alert.addAction(cancel)
