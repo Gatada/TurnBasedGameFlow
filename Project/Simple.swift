@@ -218,7 +218,9 @@ class Simple: UIViewController {
     
     @IBAction func matchMakerTap(_ sender: Any) {
         
-        let request = prepareMatchRequest(withInviteMessage: "Simple wants you to play!", usingAutomatch: false)
+        let localPlayerName = GKLocalPlayer.local.displayName
+        let request = prepareMatchRequest(withInviteMessage: "\(localPlayerName) wants to play!", usingAutomatch: false)
+        
         let matchMaker = GKTurnBasedMatchmakerViewController(matchRequest: request)
         matchMaker.turnBasedMatchmakerDelegate = self
         matchMaker.showExistingMatches = true
@@ -240,88 +242,7 @@ class Simple: UIViewController {
             return
         }
 
-        let stringArguments = [String]()
-        let turnTimeout: TimeInterval = 120 // seconds
-
-        func sendExchange(to recipient: GKTurnBasedParticipant) {
-            
-            guard let match = currentMatch, let currentParticipant = match.currentParticipant else {
-                assertionFailure("No match set for exchange")
-                return
-            }
-            
-            // From the documentation:
-            // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
-            //
-            // "All exchanges must include the current turn holder, as only the
-            // current turn holder is allowed to update the game status.
-            // [...]
-            // The exchange is complete and the turn holder is notified. The
-            // turn holder then applies the results of the exchange to the
-            // match data and marks it as resolved."
-            //
-            // The last paragraph is confusing, as it appears as if the turn
-            // holder will be notified - unlike the other exchange recipients.
-            //
-            // However, the first paragraph is pretty clear. Which means the turn
-            // holder will have the opportunity to reply to an exchange intended
-            // for another player.
-            //
-            // To fix this I am specifying the recipient playerID in the data.
-            // Not sure how else I can avoid turn holder from replying.
-            
-            var recipients = [recipient]
-            if recipient != currentParticipant {
-                print("Exchange recipient is not turn holder, so adding currentParticipant.")
-                recipients.append(currentParticipant)
-            }
-            
-            guard let ID = recipient.player?.playerID, let exchangeData = data(fromCodable: ["recipient": ID]) else {
-                print("Failed to create data")
-                return
-            }
-            
-            currentMatch?.sendExchange(to: recipients, data: exchangeData, localizableMessageKey: "You want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
-                if let receivedError = error {
-                    // print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                    self?.handleError(receivedError)
-                    return
-                }
-                
-                guard let receivedExchange = exchange else {
-                    // print("No exchange received")
-                    return
-                }
-                
-                // print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
-                self?.refreshInterface()
-                
-                self?.awaitReplyOrCancelExchange(receivedExchange)
-            }
-        }
-
-        let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
-        for participant in match.participants {
-            
-            guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
-                // Not yet a real participant to trade with.
-                continue
-            }
-            
-            let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self] _ in
-                sendExchange(to: participant)
-                self?.advanceAlertQueueIfNeeded()
-            }
-            
-            alert.addAction(recipient)
-        }
-        
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-            // print("Player cancelled exchange before it began.")
-            self?.advanceAlertQueueIfNeeded()
-        }
-        alert.addAction(cancel)
-        
+        let alert = tradeAlertForMatch(match)
         presentOrQueueAlert(alert, ofType: .creatingExchange)
     }
     
@@ -334,11 +255,8 @@ class Simple: UIViewController {
             return
         }
         
-        // print("Send reminder for match \(match.matchID)")
-        
         let stringArguments = [String]()
         guard let sleepingParticipant = match.currentParticipant else {
-            // print("No current participant was found for the match!")
             return
         }
                 
@@ -430,7 +348,7 @@ class Simple: UIViewController {
                     if (receivedError as NSError).code == 3 {
                         // This error seems to indicate that
                         // print("Re-try to end turn?")
-                        print(receivedError.localizedDescription)
+                        print(receivedError)
                     }
                     
                     // print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
@@ -594,13 +512,13 @@ class Simple: UIViewController {
                 // print("User needs to authenticate as a player.")
                 
             } else if self?.localPlayerIsAuthenticated == false {
-                // print("Failed to authenticate local player.")
+                print("Failed to authenticate local player.")
                 
             } else {
                 
                 // Local Player is authenticated.
                 self?.refreshInterface()
-                // print("Local player is authenticated.")
+                print("Local player is authenticated.")
                 
             }
         }
@@ -628,7 +546,10 @@ class Simple: UIViewController {
     
     // MARK: - Helpers
     
-    
+    /// Call to have presented alert dismissed iff it is of the correct type.
+    ///
+    /// Checks the type of the first alert in the queue, then verifies that it is indeed visible
+    /// before dismissing it with an animation and advancing the alert queue if needed.
     func dismissAlert(ofType dismissableType: AlertType) {
         if let presented = alertQueue.first, presented.type == dismissableType {
             
@@ -737,7 +658,9 @@ class Simple: UIViewController {
     }
     
     func presentErrorWithMessage(_ message: String, title: String = "Received Error") {
-        let alert = informativeAlertWithTitle(title, message: message)
+        let alert = Utility.alert(title, message: message) { [weak self] in
+            self?.advanceAlertQueueIfNeeded()
+        }
         presentOrQueueAlert(alert)
     }
     
@@ -857,39 +780,6 @@ class Simple: UIViewController {
         }
         
         return newTurnOrder
-    }
-    
-    func informativeAlertWithTitle(_ title: String, message: String? = nil) -> UIAlertController {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .cancel) { [weak self] _ in
-            self?.advanceAlertQueueIfNeeded()
-        }
-        alert.addAction(ok)
-        return alert
-    }
-    
-    func opponentNamesForMatch(_ match: GKTurnBasedMatch) -> String {
-        
-        var opponents = ""
-        var comma = ""
-        let opponentCount = match.participants.count - 1
-        var nameCount = 0
-        for participant in match.participants {
-            guard participant.player != GKLocalPlayer.local else {
-                continue
-            }
-            
-            if let name = participant.player?.displayName {
-                opponents += comma + name
-            }
-
-            nameCount += 1
-            if nameCount == opponentCount - 1 {
-                comma = " and "
-            } else {
-                comma = ", "
-            }
-        }
     }
     
     // MARK: Exchange Related
@@ -1104,7 +994,7 @@ extension Simple: GKLocalPlayerListener {
             print("\(participant.player?.displayName ?? "Unnamed player")\t: \(stringForPlayerOutcome(participant.matchOutcome))")
         }
 
-        let names = opponentNamesForMatch(match)
+        let names = Utility.opponentNamesForMatch(match)
         
         let alert = UIAlertController(title: "You \(stringForPlayerOutcome(localPlayer.matchOutcome).lowercased()) in a match against \(names)!", message: "Do you want to see the result now?", preferredStyle: .alert)
         
@@ -1217,21 +1107,7 @@ extension Simple: GKLocalPlayerListener {
         } else {
         
             // print("Turn event received for another match.")
-                        
-            let alert = UIAlertController(title: "A turn was taken in another match.", message: "Do you want to jump to that match?", preferredStyle: .alert)
-            let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
-                // print("Player chose to go to match \(match.matchID)")
-                self?.currentMatch = match
-                self?.refreshInterface()
-                self?.advanceAlertQueueIfNeeded()
-            }
-            let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
-                // print("Player did not want to go to match \(match.matchID)")
-                self?.advanceAlertQueueIfNeeded()
-            }
-            alert.addAction(jump)
-            alert.addAction(ignore)
-            
+            let alert = alertForTurnTaken(in: match)
             self.presentOrQueueAlert(alert, ofType: .alteringMatchContext)
         }
         
@@ -1342,7 +1218,9 @@ extension Simple: GKLocalPlayerListener {
         // print("\nExchange creator \(exchange.sender.player?.displayName ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
         
         let sender = exchange.sender.player?.displayName ?? "unknown sender"
-        let alert = informativeAlertWithTitle("Exchange with \(sender) was cancelled", message: nil)
+        let alert = Utility.alert("Exchange with \(sender) was cancelled", message: nil) { [weak self] in
+            self?.advanceAlertQueueIfNeeded()
+        }
         presentOrQueueAlert(alert, ofType: .exchangeCancellationNotification)
         dismissAlert(ofType: .respondingToExchange)
         
@@ -1433,5 +1311,125 @@ extension Simple: GKLocalPlayerListener {
 
     func player(_ player: GKPlayer, didRequestMatchWithRecipients recipientPlayers: [GKPlayer]) {
         print("Did request match with recipients")
+    }
+}
+
+
+
+
+// MARK: - Interface Related
+
+extension Simple {
+    
+    func alertForTurnTaken(in match: GKTurnBasedMatch) -> UIAlertController {
+        let names = Utility.opponentNamesForMatch(match)
+        
+        let alert = UIAlertController(title: "A turn was taken in a match with \(names).", message: "Do you want to jump to that match?", preferredStyle: .alert)
+        let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self] _ in
+            // print("Player chose to go to match \(match.matchID)")
+            self?.currentMatch = match
+            self?.refreshInterface()
+            self?.advanceAlertQueueIfNeeded()
+        }
+        let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            // print("Player did not want to go to match \(match.matchID)")
+            self?.advanceAlertQueueIfNeeded()
+        }
+        alert.addAction(jump)
+        alert.addAction(ignore)
+        
+        return alert
+    }
+    
+    func tradeAlertForMatch(_ match: GKTurnBasedMatch) -> UIAlertController {
+        let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
+        for participant in match.participants {
+            
+            guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
+                // Not yet a real participant to trade with.
+                continue
+            }
+            
+            let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self] _ in
+                self?.sendExchange(for: match, to: participant)
+                self?.advanceAlertQueueIfNeeded()
+            }
+            
+            alert.addAction(recipient)
+        }
+        
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+            self?.advanceAlertQueueIfNeeded()
+        }
+
+        alert.addAction(cancel)
+        return alert
+    }
+
+}
+
+
+// MARK: - Utiltieis
+
+extension Simple {
+    
+    func sendExchange(for match: GKTurnBasedMatch, to recipient: GKTurnBasedParticipant) {
+
+        let stringArguments = [String]()
+        let turnTimeout: TimeInterval = 120 // seconds
+
+        guard let currentParticipant = match.currentParticipant else {
+            assertionFailure("No match set for exchange")
+            return
+        }
+        
+        // From the documentation:
+        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
+        //
+        // "All exchanges must include the current turn holder, as only the
+        // current turn holder is allowed to update the game status.
+        // [...]
+        // The exchange is complete and the turn holder is notified. The
+        // turn holder then applies the results of the exchange to the
+        // match data and marks it as resolved."
+        //
+        // The last paragraph is confusing, as it appears as if the turn
+        // holder will be notified - unlike the other exchange recipients.
+        //
+        // However, the first paragraph is pretty clear. Which results in
+        // the turn holder will have the opportunity to reply to an exchange
+        // intended for another player.
+        //
+        // To fix this I am specifying the recipient playerID in the data.
+        // Not sure how else I can avoid turn holder from replying.
+        
+        var recipients = [recipient]
+        if recipient != currentParticipant {
+            print("Exchange recipient is not turn holder, so adding currentParticipant.")
+            recipients.append(currentParticipant)
+        }
+        
+        guard let ID = recipient.player?.playerID, let exchangeData = data(fromCodable: ["recipient": ID]) else {
+            print("Failed to create data")
+            return
+        }
+        
+        match.sendExchange(to: recipients, data: exchangeData, localizableMessageKey: "You want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
+            if let receivedError = error {
+                // print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
+                return
+            }
+            
+            guard let receivedExchange = exchange else {
+                // print("No exchange received")
+                return
+            }
+            
+            // print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
+            self?.refreshInterface()
+            
+            self?.awaitReplyOrCancelExchange(receivedExchange)
+        }
     }
 }
