@@ -871,7 +871,7 @@ extension Simple: GKLocalPlayerListener {
     // This extension is critical, as it handles all Game Center and
     // `GKTurnBasedMatch` related events.
 
-    // MARK: GKTurnBasedEventListener
+    // MARK: - GKTurnBasedEventListener
 
     /// Calling this will forfeit the match by ending the current turn and passing the turn to the next
     /// player who wins by walkover.
@@ -1058,7 +1058,7 @@ extension Simple: GKLocalPlayerListener {
         print("Did request match with other players ")
     }
 
-    // MARK: Exchange Related
+    // MARK: - Exchange Related -
     
     // From: https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/GameKit_Guide/ImplementingaTurn-BasedMatch/ImplementingaTurn-BasedMatch.html
     //
@@ -1173,6 +1173,12 @@ extension Simple: GKLocalPlayerListener {
             return
         }
         
+        guard let sender = exchange.sender.player else {
+            print("Exchange request has no sender!")
+            return
+        }
+
+        
         guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
             
             // This exchange is intended for another player, so it is ignored
@@ -1186,48 +1192,16 @@ extension Simple: GKLocalPlayerListener {
             
             return
         }
-                
-        let message = exchange.message ?? "Do you want to trade?"
         
-        guard let sender = exchange.sender.player else {
-            // print("Echange request has no sender!")
-            return
-        }
-
+                
         printDetailsForExchange(exchange, for: match, with: sender)
         
-        let alert = UIAlertController(title: "Accept exchange with \(player.displayName)?", message: message, preferredStyle: .alert)
-        
-        let accept = UIAlertAction(title: "Accept", style: .default) { [weak self, weak alertManager] action in
-            self?.replyToExchange(exchange, accepted: true)
-            self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
-        }
-
-        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self, weak alertManager] action in
-            self?.replyToExchange(exchange, accepted: false)
-            self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
-        }
-
-        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self, weak alertManager] action in
-            
-            // There is no way to cancel a received request.
-            // Either reply with a decline or let the request time-out.
-            
-            self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
-        }
-        
-        alert.addAction(accept)
-        alert.addAction(decline)
-        alert.addAction(ignore)
-
+        let alert = acceptTradeAlert(for: exchange)
         alertManager?.presentOrQueueAlert(alert, ofType: .respondingToExchange)
     }
 
 
-    // MARK: GKInviteEventListener
+    // MARK: - GKInviteEventListener
 
     func player(_ player: GKPlayer, didAccept invite: GKInvite) {
         print("Did accept invite")
@@ -1244,7 +1218,7 @@ extension Simple: GKLocalPlayerListener {
 
 
 
-// MARK: - Interface Related
+// MARK: - INTERFACE RELATED -
 
 extension Simple {
     
@@ -1311,11 +1285,46 @@ extension Simple {
         alert.addAction(cancel)
         return alert
     }
+    
+    func acceptTradeAlert(for exchange: GKTurnBasedExchange) -> UIAlertController {
+        
+        let message = exchange.message ?? "Do you want to trade?"
+        let name = exchange.sender.player?.displayName ?? "unknown player"
+        
+        let alert = UIAlertController(title: "Accept exchange with \(name)?", message: message, preferredStyle: .alert)
+        
+        let accept = UIAlertAction(title: "Accept", style: .default) { [weak self, weak alertManager] action in
+            self?.replyToExchange(exchange, accepted: true)
+            self?.refreshInterface()
+            alertManager?.advanceAlertQueueIfNeeded()
+        }
+
+        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self, weak alertManager] action in
+            self?.replyToExchange(exchange, accepted: false)
+            self?.refreshInterface()
+            alertManager?.advanceAlertQueueIfNeeded()
+        }
+
+        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self, weak alertManager] action in
+            
+            // There is no way to cancel a received request.
+            // Either reply with a decline or let the request time-out.
+            
+            self?.refreshInterface()
+            alertManager?.advanceAlertQueueIfNeeded()
+        }
+        
+        alert.addAction(accept)
+        alert.addAction(decline)
+        alert.addAction(ignore)
+        
+        return alert
+    }
 
 }
 
 
-// MARK: - Utiltieis
+// MARK: - UTILITIES -
 
 extension Simple {
     
