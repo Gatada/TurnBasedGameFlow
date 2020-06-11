@@ -8,6 +8,15 @@
 
 import UIKit
 
+/// A structure used to associate an instance of a `UIAlertController` with
+/// an `AlertType` and match identifier.
+struct QueuedAlert {
+    weak var alert: UIAlertController?
+    let type: AlertType
+    let matchID: String?
+}
+
+
 class AlertManager {
     
     // MARK: - PROPERTIES
@@ -36,7 +45,7 @@ class AlertManager {
     public func dismissAlert(ofType dismissableType: AlertType) {
         if let presented = alertQueue.first, presented.type == dismissableType {
             
-            let alertIsVisible = presented.alert.isViewLoaded && presented.alert.view.window != nil
+            let alertIsVisible = presented.alert?.isViewLoaded == true && presented.alert?.view.window != nil
             guard alertIsVisible else {
                 assertionFailure("Tried to dismiss an alert that is not visible")
                 return
@@ -56,32 +65,38 @@ class AlertManager {
     /// - Parameters:
     ///   - alert: The alert controller to queue.
     ///   - isContextSensitive: If `true` the alert will be shown next, otherwise last.
-    public func presentOrQueueAlert(_ alert: UIAlertController, ofType type: AlertType = .informative) {
+    public func presentOrQueueAlert(_ alert: UIAlertController, withMatchID id: String? = nil, ofType type: AlertType = .informative) {
         
+        let alertDetails = QueuedAlert(alert: alert, type: type, matchID: id)
+
         if alertQueue.isEmpty {
             presenter?.present(alert, animated: true) { [weak self] in
-                self?.alertQueue.append((type, alert))
+                self?.alertQueue.append(alertDetails)
             }
         } else {
             
             // Already showing an alert.
-            // Add new alert to queue.
+            // Verify that the alert is not a duplicate, then add alert to queue.
             //
             // The queue is advanced when visible alert calls
             // Simple.advanceAlertQueueIfNeeded() as part of its available
             // actions.
-
-            let unqueuedAlert: QueuedAlert = (type, alert)
             
+            guard alertQueue.firstIndex(where: { $0.matchID == alertDetails.matchID && $0.type == alertDetails.type }) == nil else {
+                print("Discarding alert as queue already contains an alert with similar purpose.")
+                return
+            }
+            
+
             if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < type.priority }) {
                 // Found entry with lower priority than unqueued alert.
                 // Inserting alert at this location so it'll be presented first.
-                alertQueue.insert(unqueuedAlert, at: insertIndex)
+                alertQueue.insert(alertDetails, at: insertIndex)
                 // print("Inserted alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" at index \(insertIndex).")
             } else {
                 // No queued alert found with lower priority then unqeued alert.
                 // Appending alert to the end of the queue
-                alertQueue.append(unqueuedAlert)
+                alertQueue.append(alertDetails)
                 // print("Appended alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" to end of queue.")
             }
         }
@@ -92,25 +107,27 @@ class AlertManager {
     /// - Important: This should be called at the end of any action associated with a queued alert.
     public func advanceAlertQueueIfNeeded() {
         guard !alertQueue.isEmpty else {
-            // print("No currently visible alerts.")
+            print("Empty alert queue, bailing. Currently there should be no alert visible on screen?")
             return
         }
         
-        guard alertQueue.first?.alert.isBeingPresented == false else {
-            assertionFailure("Dequeued an alert that is still being presented.")
+        let removed = alertQueue.removeFirst()
+        
+        let isShowingAlert = removed.alert?.isViewLoaded == true && removed.alert?.view.window != nil
+        
+        guard !isShowingAlert else {
+            assertionFailure("Attempted to dequeued an alert that is still shown.")
             return
         }
         
-        alertQueue.removeFirst()
-        
-        guard let nextUp = alertQueue.first else {
-            // print("No more queued alerts to present.")
+        guard let nextUp = alertQueue.first, let nextAlert = nextUp.alert else {
+            print("No more queued alerts to present.")
             return
         }
         
-        presenter?.present(nextUp.alert, animated: true) { [weak self] in
+        presenter?.present(nextAlert, animated: true) { [weak self] in
             let queuedAlertCount = self?.alertQueue.count ?? 0
-            let alertCaption = "\"\(nextUp.alert.title ?? nextUp.alert.message ?? "an empty alert")\""
+            let alertCaption = "\"\(nextAlert.title ?? nextAlert.message ?? "an empty alert")\""
             print("Presented \(alertCaption) alert from queue (\(queuedAlertCount - 1) remaining).")
         }
     }

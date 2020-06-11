@@ -14,10 +14,6 @@ import GameKit
 // ■ AppDelegate for new turn and activations
 // ■ Match view controller for updates to the current match
 
-/// A type used to pair an instance of a `UIAlertController` with an `AlertType`.
-typealias QueuedAlert = (type: AlertType, alert: UIAlertController)
-
-
 
 /// One controller to rule them all.
 class Simple: UIViewController {
@@ -248,7 +244,7 @@ class Simple: UIViewController {
         }
 
         let alert = tradeAlertForMatch(match)
-        alertManager.presentOrQueueAlert(alert, ofType: .creatingExchange)
+        alertManager.presentOrQueueAlert(alert, withMatchID: match.matchID, ofType: .creatingExchange)
     }
     
     
@@ -739,7 +735,7 @@ class Simple: UIViewController {
     }
     
     
-    func awaitReplyOrCancelExchange(_ exchange: GKTurnBasedExchange) {
+    func awaitReplyOrCancelExchange(_ exchange: GKTurnBasedExchange, forMatch match: GKTurnBasedMatch) {
         let alert = UIAlertController(title: "Exchange", message: "Awaiting reply or timeout.", preferredStyle: .actionSheet)
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] action in
@@ -757,7 +753,7 @@ class Simple: UIViewController {
         }
         
         alert.addAction(cancel)
-        alertManager?.presentOrQueueAlert(alert, ofType: .waitingForExchangeReplies)
+        alertManager?.presentOrQueueAlert(alert, withMatchID: match.matchID, ofType: .waitingForExchangeReplies)
     }
     
     func mergeCompletedExchangesAsNeeded(resolvedData: Data, closure: @escaping (Error?)->Void) {
@@ -1384,7 +1380,7 @@ extension Simple {
             // print("Sent exchange \(receivedExchange.exchangeID) for match \(self?.currentMatch?.matchID ?? "N/A")")
             self?.refreshInterface()
             
-            self?.awaitReplyOrCancelExchange(receivedExchange)
+            self?.awaitReplyOrCancelExchange(receivedExchange, forMatch: match)
         }
     }
 }
