@@ -33,7 +33,7 @@ class AlertManager {
     ///
     /// Starting from the root view controller of the key window, it parses the entire
     /// view stack to eventually locate the topmost view controller.
-    var topmostController: UIViewController {
+    public var topmostController: UIViewController {
         guard var topController = self.keyWindow.rootViewController else {
             fatalError("Failed to find rootViewController")
         }

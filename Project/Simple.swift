@@ -59,8 +59,6 @@ class Simple: UIViewController {
     /// Match data for currently selected match.
     var matchData: Data?
     
-    weak var matchMakerController: GKTurnBasedMatchmakerViewController?
-    
     /// Returns `true` if the local player has been authenticated, `false` otherwise.
     public var localPlayerIsAuthenticated: Bool {
         return GKLocalPlayer.local.isAuthenticated
@@ -205,10 +203,7 @@ class Simple: UIViewController {
         currentMatch = nil
         refreshInterface()
         
-        self.present(matchMaker, animated: true) {
-            // print("Presented Match Maker")
-            self.matchMakerController = matchMaker
-        }
+        self.present(matchMaker, animated: true, completion: nil)
     }
     
     @IBAction func beginExchangeTap(_ sender: Any) {
@@ -1228,12 +1223,11 @@ extension Simple {
             self?.refreshInterface()
             alertManager?.advanceAlertQueueIfNeeded()
             
-            if self?.matchMakerController != nil {
-                self?.dismiss(animated: true, completion: {
-                    self?.matchMakerController = nil
-                })
-            }
+            print("Topmost: \(String(describing: alertManager?.topmostController))")
             
+            if alertManager?.topmostController is GKMatchmakerViewController {
+                self?.dismiss(animated: true, completion: nil)
+            }
         }
         let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
             // print("Player did not want to go to match \(match.matchID)")
