@@ -44,7 +44,8 @@ class Simple: UIViewController {
     
     
     // MARK: - PROPERTIES
-    
+
+    /// A manager that handles the alert controller queuing and presentation.
     private var alertManager: AlertManager?
     
     /// An audio player that plays a single sound.
@@ -123,7 +124,7 @@ class Simple: UIViewController {
             return
         }
         
-        // Various states needed to refresh interface.
+        // Various states needed to correctly refresh interface.
 
         let gameEnded = match.status == .ended
         let isResolvingTurn = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
@@ -136,7 +137,7 @@ class Simple: UIViewController {
         endTurnWin.isEnabled = isResolvingTurn
         endTurnLose.isEnabled = isResolvingTurn && opponentsStillPlaying
         
-        // These two occupy same screen real-estate:
+        // These two buttons occupy same screen real-estate:
         quitInTurn.isHidden = (!isResolvingTurn && !gameEnded) || gameEnded
         rematch.isHidden = !gameEnded
         
@@ -1056,8 +1057,8 @@ extension Simple: GKLocalPlayerListener {
     // 4) After the exchange is completed, the exchange result is sent to the
     // current player.
     // -> Assumed to mean: the completed exchange is automatically sent to
-    // current player. No need to do anything for the creator after the creator
-    // received the exchange replies.
+    // current player. The exchange creator does not need to do anything for
+    // the turn holder to receive the result of the completed exchange.
     //
     // 5) The exchange is reconciled at the end of the current player’s turn.
     // -> Assumed to mean: merge data from exchange and game, then end turn as
@@ -1139,6 +1140,7 @@ extension Simple: GKLocalPlayerListener {
             ––––––––––––––––––––––––––
             RECEIVED EXCHANGE REQUEST!
             ––––––––––––––––––––––––––
+            local player: \(player.displayName)
 
             """)
         
@@ -1153,10 +1155,7 @@ extension Simple: GKLocalPlayerListener {
             print("Exchange request has no sender!")
             return
         }
-        
-        
 
-        
         guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
             
             // This exchange is intended for another player, so it is ignored
@@ -1211,7 +1210,7 @@ extension Simple {
         
         if isTurnHolder && isReminder {
             title = "Please take your turn!"
-            message = "\(names) reminded you to take your turn."
+            message = "Turn reminder received for a game with \(names)."
         
         } else if isTurnHolder {
             title = "It's your turn!"
@@ -1228,6 +1227,13 @@ extension Simple {
             self?.currentMatch = match
             self?.refreshInterface()
             alertManager?.advanceAlertQueueIfNeeded()
+            
+            if self?.matchMakerController != nil {
+                self?.dismiss(animated: true, completion: {
+                    self?.matchMakerController = nil
+                })
+            }
+            
         }
         let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
             // print("Player did not want to go to match \(match.matchID)")
