@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0416AB9B2492424500D946F5 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0416AB9A2492424500D946F5 /* Utility.swift */; };
 		0416AB9D249262D000D946F5 /* AlertManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0416AB9C249262D000D946F5 /* AlertManager.swift */; };
+		0416AB9F24938FD000D946F5 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0416AB9E24938FD000D946F5 /* UIViewController.swift */; };
 		0421CCAD248E6E61006D1B3E /* UIApplicationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */; };
 		04633BFD248F7EAB00C12505 /* GKMessageImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 04633BFC248F7EAB00C12505 /* GKMessageImage.png */; };
 		04633BFF249114AA00C12505 /* AlertType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04633BFE249114AA00C12505 /* AlertType.swift */; };
@@ -29,6 +30,7 @@
 /* Begin PBXFileReference section */
 		0416AB9A2492424500D946F5 /* Utility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		0416AB9C249262D000D946F5 /* AlertManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertManager.swift; sourceTree = "<group>"; };
+		0416AB9E24938FD000D946F5 /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 		0421CCA8248E507B006D1B3E /* GKInvite.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GKInvite.caf; sourceTree = "<group>"; };
 		0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIApplicationDelegate.swift; sourceTree = "<group>"; };
 		04633BFC248F7EAB00C12505 /* GKMessageImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GKMessageImage.png; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 				0421CCAC248E6E61006D1B3E /* UIApplicationDelegate.swift */,
 				04D3A9BC248B9AA600AE9325 /* UIColor.swift */,
 				04B1A967248EEFAF002ED61B /* UIView.swift */,
+				0416AB9E24938FD000D946F5 /* UIViewController.swift */,
 			);
 			path = Decorator;
 			sourceTree = "<group>";
@@ -284,6 +287,7 @@
 			files = (
 				04D3A9BF248B9AC800AE9325 /* BackgroundFilledButton.swift in Sources */,
 				0416AB9D249262D000D946F5 /* AlertManager.swift in Sources */,
+				0416AB9F24938FD000D946F5 /* UIViewController.swift in Sources */,
 				0416AB9B2492424500D946F5 /* Utility.swift in Sources */,
 				04633C01249116A700C12505 /* Game.swift in Sources */,
 				04D3A9C1248B9F7C00AE9325 /* Helpers.swift in Sources */,

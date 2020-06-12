@@ -77,26 +77,6 @@ class Simple: UIViewController {
         }
         return opponents.first
     }
-    
-    /// Returns the opponent or `nil` if there is no match selected.
-    var opponent: GKTurnBasedParticipant? {
-        guard let match = currentMatch else {
-            return nil
-        }
-        
-        let opponent = match.participants.filter { (player) -> Bool in
-            player.player != GKLocalPlayer.local
-        }.first
-        
-        // print( """
-        //     Local   : \(GKLocalPlayer.local.playerID)
-        //     Opponent: \(opponent?.status == .matching ? "Searching.." : (opponent?.player?.playerID ?? "n/a"))
-        //     Current : \(match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID ? "Resolving Turn!" : "Waiting..")
-        //     """)
-        
-        return opponent
-    }
-    
     var currentMatch: GKTurnBasedMatch? = nil {
         didSet {
             // print("Current match was updated..")
@@ -112,7 +92,7 @@ class Simple: UIViewController {
         prepareAudio()
         resetInterface()
         versionBuild.text = AppDelegate.versionBuild
-        alertManager = AlertManager(presenter: self)
+        alertManager = AlertManager()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -142,25 +122,25 @@ class Simple: UIViewController {
             resetInterface()
             return
         }
-
+        
         // Various states needed to refresh interface.
 
         let gameEnded = match.status == .ended
         let isResolvingTurn = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
-        let opponentOutcomeSet = opponent?.matchOutcome != GKTurnBasedMatch.Outcome.none
+        let opponentsStillPlaying = !match.participants.filter({ $0.player?.playerID != GKLocalPlayer.local.playerID && $0.matchOutcome == .none }).isEmpty
         let hasLocalOutcome = localParticipant?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let isMatching = match.status == .matching
         
-        updateMatch.isEnabled = isResolvingTurn && !opponentOutcomeSet
-        endTurn.isEnabled = isResolvingTurn && !opponentOutcomeSet
+        updateMatch.isEnabled = isResolvingTurn && opponentsStillPlaying
+        endTurn.isEnabled = isResolvingTurn && opponentsStillPlaying
         endTurnWin.isEnabled = isResolvingTurn
-        endTurnLose.isEnabled = isResolvingTurn && !opponentOutcomeSet
+        endTurnLose.isEnabled = isResolvingTurn && opponentsStillPlaying
         
         // These two occupy same screen real-estate:
         quitInTurn.isHidden = (!isResolvingTurn && !gameEnded) || gameEnded
         rematch.isHidden = !gameEnded
         
-        beginExchange.isEnabled = !isMatching && !gameEnded && !opponentOutcomeSet
+        beginExchange.isEnabled = !isMatching && !gameEnded && opponentsStillPlaying
 
         // Only enable reminders while out of turn.
         let canSendReminder = !(gameEnded || isMatching || isResolvingTurn || hasLocalOutcome)
@@ -376,7 +356,7 @@ class Simple: UIViewController {
             
             self?.refreshInterface()
             
-            // print("Win match \(self?.currentMatch?.matchID ?? "N/A")")
+            print("Win match \(self?.currentMatch?.matchID ?? "N/A")")
             
             guard let match = self?.currentMatch else {
                 // print("No match selected.")
@@ -1173,6 +1153,8 @@ extension Simple: GKLocalPlayerListener {
             print("Exchange request has no sender!")
             return
         }
+        
+        
 
         
         guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {

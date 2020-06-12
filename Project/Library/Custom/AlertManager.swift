@@ -16,23 +16,43 @@ struct QueuedAlert {
     let matchID: String?
 }
 
+enum AlertManagerError: Error {
+    case keyWindowNotFound
+}
+
 
 class AlertManager {
     
     // MARK: - PROPERTIES
     
+    /// The key window used to dig out the currently visible view controller.
+    var keyWindow: UIWindow
+    
+    
+    /// Returns the topmost view controller.
+    ///
+    /// Starting from the root view controller of the key window, it parses the entire
+    /// view stack to eventually locate the topmost view controller.
+    var topmostController: UIViewController {
+        guard var topController = self.keyWindow.rootViewController else {
+            fatalError("Failed to find rootViewController")
+        }
+        while let presentedViewController = topController.presentedViewController {
+            topController = presentedViewController
+        }
+        return topController
+    }
+    
     /// Used to retain alerts created while there is already an alert on screen.
     var alertQueue = [QueuedAlert]()
     
-    /// The presenter of the alerts being displayed.
-    ///
-    /// For the sake of simplicity the presenter cannot be changed once set.
-    weak var presenter: UIViewController?
-    
     // MARK: - Life Cycle
     
-    init(presenter: UIViewController) {
-        self.presenter = presenter
+    init() {
+        guard let keyWindow = UIApplication.shared.windows.first else {
+            fatalError("Failed to obtain key window from application delegate.")
+        }
+        self.keyWindow = keyWindow
     }
 
     
@@ -51,7 +71,7 @@ class AlertManager {
                 return
             }
             
-            presenter?.dismiss(animated: true) { [weak self] in
+            topmostController.dismiss(animated: true) { [weak self] in
                 self?.advanceAlertQueueIfNeeded()
             }
         }
@@ -70,7 +90,7 @@ class AlertManager {
         let alertDetails = QueuedAlert(alert: alert, type: type, matchID: id)
 
         if alertQueue.isEmpty {
-            presenter?.present(alert, animated: true) { [weak self] in
+            topmostController.present(alert, animated: true) { [weak self] in
                 self?.alertQueue.append(alertDetails)
             }
         } else {
@@ -111,24 +131,37 @@ class AlertManager {
             return
         }
         
-        let removed = alertQueue.removeFirst()
+        alertQueue.removeFirst()
         
-        let isShowingAlert = removed.alert?.isViewLoaded == true && removed.alert?.view.window != nil
-        
-        guard !isShowingAlert else {
-            assertionFailure("Attempted to dequeued an alert that is still shown.")
+        guard let nextUp = alertQueue.first, let nextAlert = nextUp.alert else {
+            print("No more queued alerts to present.")
             return
         }
+
+        presentAlert(nextAlert)
+    }
+    
+    
+    /// Presents the alert controller using topmost view controller.
+    ///
+    /// To find the topmost view controller the entire view stack is parsed,
+    /// which is then used to modally present the alert.
+    func presentAlert(_ alert: UIAlertController) {
         
         guard let nextUp = alertQueue.first, let nextAlert = nextUp.alert else {
             print("No more queued alerts to present.")
             return
         }
         
-        presenter?.present(nextAlert, animated: true) { [weak self] in
-            let queuedAlertCount = self?.alertQueue.count ?? 0
-            let alertCaption = "\"\(nextAlert.title ?? nextAlert.message ?? "an empty alert")\""
-            print("Presented \(alertCaption) alert from queue (\(queuedAlertCount - 1) remaining).")
+        DispatchQueue.main.async { [weak self] in
+            guard let topmostController = self?.topmostController else {
+                fatalError("No topmost controller identified")
+            }
+            topmostController.present(nextAlert, animated: true) { [weak self] in
+                let queuedAlertCount = self?.alertQueue.count ?? 0
+                let alertCaption = "\"\(nextAlert.title ?? nextAlert.message ?? "an empty alert")\""
+                print("Presented \(alertCaption) alert from queue (\(queuedAlertCount - 1) remaining).")
+            }
         }
     }
     
