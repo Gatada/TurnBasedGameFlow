@@ -1218,16 +1218,14 @@ extension Simple {
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let jump = UIAlertAction(title: "Load Match", style: .default) { [weak self, weak alertManager] _ in
-            // print("Player chose to go to match \(match.matchID)")
             self?.currentMatch = match
             self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
             
-            print("Topmost: \(String(describing: alertManager?.topmostController))")
-            
-            if alertManager?.topmostController is GKMatchmakerViewController {
+            if alertManager?.topmostController is GKTurnBasedMatchmakerViewController {
                 self?.dismiss(animated: true, completion: nil)
             }
+
+            alertManager?.advanceAlertQueueIfNeeded()
         }
         let ignore = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
             // print("Player did not want to go to match \(match.matchID)")
