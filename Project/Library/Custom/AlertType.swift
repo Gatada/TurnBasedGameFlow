@@ -47,7 +47,7 @@ enum AlertType: Int {
     /// This is only required as this app uses a highly simplified exchange structure.
     case waitingForExchangeReplies
     
-    /// Alert type used for the alert that lets the user accept or decline a received exchange.
+    /// Alert type used for the alert that lets the user accept, decline or resolve an exchange.
     case respondingToExchange
     
     /// A generic alert that is associated with the currently displayed match.

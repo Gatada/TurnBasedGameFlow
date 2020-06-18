@@ -255,149 +255,113 @@ class Simple: UIViewController {
     /// To be able to update the match data, it seems like all exchanges must be resolved. I can see that
     /// this would make sense, as the update will also affect the match data.
     @IBAction func updateMatchTap(_ sender: Any) {
-        
-        guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
+
+        print("Update match \(self.currentMatch?.matchID ?? "N/A")")
+
+        guard let matchData = stringArrayToData(stringArray: [Date().description]) else {
             print("Failed to merge match data")
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
-            switch result {
-            case .failure(let error):
-                self?.handleError(error)
-            case .success(let didMergeCompletedExchanges):
-                if didMergeCompletedExchanges {
-                    print("Updated match data with completed exchanges.")
-                    self?.refreshInterface()
-                } else {
-                    print("No completed exchanges were found. Match data remains unchanged.")
-                }
+        self.currentMatch?.saveCurrentTurn(withMatch: matchData) { [weak self] error in
+            if let receivedError = error {
+                self?.handleError(receivedError)
+                return
             }
+            
+            print("Updated match \(self?.currentMatch?.matchID ?? "N/A")")
+            self?.refreshInterface()
         }
     }
     
    
     @IBAction func endTurnTap(_ sender: Any) {
         
-        guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-            print("Failed to merge match data")
+        // From session #506 at WWDC 2013:
+        // https://developer.apple.com/videos/play/wwdc2013/506/
+        // Last participant on list does not time out.
+        // Include yourself last.
+        
+        guard let match = self.currentMatch else {
+            // print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            
-            self?.refreshInterface()
-            
-            // From session #506 at WWDC 2013:
-            // https://developer.apple.com/videos/play/wwdc2013/506/
-            // Last participant on list does not time out.
-            // Include yourself last.
-            
-            guard let match = self?.currentMatch else {
-                // print("No opponent for match \(self?.currentMatch?.matchID ?? "N/A")")
-                return
-            }
-            
-            guard let nextParticipants = self?.nextParticipantsForMatch(match) else {
-                // print("Failed to obtain next participants")
-                return
-            }
-            
-            let timeout = self?.turnTimeout ?? 60 * 60
-            let updatedData = Data()
-            
-            // Localized message to be set at end of turn or game:
-            self?.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
-            
-            self?.currentMatch?.endTurn(withNextParticipants: nextParticipants, turnTimeout: timeout, match: updatedData) { [weak self] error in
-                if let receivedError = error {
-                    
-                    if (receivedError as NSError).code == 3 {
-                        // This error seems to indicate that
-                        // print("Re-try to end turn?")
-                        print(receivedError)
-                    }
-                    
-                    // print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
-                    self?.handleError(receivedError)
-                    return
+        let nextParticipants = self.nextParticipantsForMatch(match)
+        let timeout = self.turnTimeout
+        let updatedData = Data()
+        
+        // Localized message to be set at end of turn or game:
+        self.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
+        
+        self.currentMatch?.endTurn(withNextParticipants: nextParticipants, turnTimeout: timeout, match: updatedData) { [weak self] error in
+            if let receivedError = error {
+                
+                if (receivedError as NSError).code == 3 {
+                    // This error seems to indicate that
+                    // print("Re-try to end turn?")
+                    print(receivedError)
                 }
                 
-                // print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
-                self?.refreshInterface()
-                
-                // print("Current player: \(self?.currentMatch?.currentParticipant?.player?.displayName ?? "N/A")")
+                // print("Failed to end turn for match \(self?.currentMatch?.matchID ?? "N/A"):")
+                self?.handleError(receivedError)
+                return
             }
+            
+            // print("Ended turn for match \(self?.currentMatch?.matchID ?? "N/A")")
+            self?.refreshInterface()
+            
+            print("Current player: \(self?.currentMatch?.currentParticipant?.player?.displayName ?? "N/A")")
         }
     }
     
     @IBAction func endTurnWinTap(_ sender: Any) {
         
-        guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-            print("Failed to merge match data")
+        print("Win match \(self.currentMatch?.matchID ?? "N/A")")
+        
+        guard let match = self.currentMatch else {
+            // print("No match selected.")
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            
-            self?.refreshInterface()
-            
-            print("Win match \(self?.currentMatch?.matchID ?? "N/A")")
-            
-            guard let match = self?.currentMatch else {
-                // print("No match selected.")
-                return
+        for participant in match.participants {
+            guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
+                participant.matchOutcome = .won
+                continue
             }
             
-            for participant in match.participants {
-                guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
-                    participant.matchOutcome = .won
-                    continue
-                }
-                
-                // All active participants have lost.
-                if participant.matchOutcome == .none {
-                    participant.matchOutcome = .lost
-                }
+            // All active participants have lost.
+            if participant.matchOutcome == .none {
+                participant.matchOutcome = .lost
             }
-            
-            self?.endCurrentMatch()
         }
+        
+        self.endCurrentMatch()
     }
     
     @IBAction func endTurnLossTap(_ sender: Any) {
         
-        guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-            print("Failed to merge match data")
+        print("Lose match \(self.currentMatch?.matchID ?? "N/A")")
+        
+        guard let match = self.currentMatch else {
+            // print("No match selected.")
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            
-            self?.refreshInterface()
-            
-            // print("Lose match \(self?.currentMatch?.matchID ?? "N/A")")
-            
-            guard let match = self?.currentMatch else {
-                // print("No match selected.")
-                return
+        // Setting the outcome for all participants
+        for participant in match.participants {
+            guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
+                participant.matchOutcome = .lost
+                continue
             }
             
-            // Setting the outcome for all participants
-            for participant in match.participants {
-                guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
-                    participant.matchOutcome = .lost
-                    continue
-                }
-                
-                // All other active participants have won.
-                if participant.matchOutcome == .none {
-                    participant.matchOutcome = .won
-                }
+            // All other active participants have won.
+            if participant.matchOutcome == .none {
+                participant.matchOutcome = .won
             }
-            
-            self?.endCurrentMatch()
         }
+        
+        self.endCurrentMatch()
     }
     
     @IBAction func rematchTap(_ sender: Any) {
@@ -1078,25 +1042,37 @@ extension Simple: GKLocalPlayerListener {
         // If the replies were received by current participant, we might just as well
         // merge the exchange data with the match data right away:
         
-        guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-            print("Failed to merge match data")
+        let recipientName = exchange.recipients.first?.player?.displayName ?? "N/A"
+        
+        guard let data = exchange.data, let array: [String] = codableInstance(from: data), let exchangeOutcome = array.first else {
+            print("Exchange \(exchange.exchangeID) has no data!")
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
-            switch result {
-            case .failure(let error):
-                self?.handleError(error)
-            case .success(let didMergeCompletedExchanges):
-                if didMergeCompletedExchanges {
-                    print("Updated match data with completed exchanges.")
-                    self?.refreshInterface()
-                    self?.view.throb(duration: 0.05, toScale: 0.85)
-                } else {
-                    print("No completed exchanges were found. Match data remains unchanged.")
+        let exchangeResult = Utility.alert("The exchange with \(recipientName) was \(exchangeOutcome)!", message: "Tapping OK will resolve the exchange and make it official.") { [weak self] in
+            
+            guard let placeholderData = self?.stringArrayToData(stringArray: [Date().description]) else {
+                print("Failed to merge match data")
+                return
+            }
+
+            self?.mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+                switch result {
+                case .failure(let error):
+                    self?.handleError(error)
+                case .success(let didMergeCompletedExchanges):
+                    if didMergeCompletedExchanges {
+                        print("Updated match data with completed exchanges.")
+                        self?.refreshInterface()
+                        self?.view.throb(duration: 0.05, toScale: 0.85)
+                    } else {
+                        print("No completed exchanges were found. Match data remains unchanged.")
+                    }
                 }
             }
         }
+        
+        alertManager?.presentOrQueueAlert(exchangeResult, withMatchID: match.matchID, ofType: .respondingToExchange)
     }
 
     func player(_ player: GKPlayer, receivedExchangeCancellation exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
@@ -1234,11 +1210,12 @@ extension Simple {
     func tradeAlertForMatch(_ match: GKTurnBasedMatch) -> UIAlertController {
         let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
         for participant in match.participants {
-            
-            guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
-                // Not yet a real participant to trade with.
-                continue
-            }
+
+            // Supposedly there should be no reason to verify that the particiapnt is indeed a real player.
+            // guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
+            //     // Not yet a real participant to trade with.
+            //     continue
+            // }
             
             let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self, weak alertManager] _ in
                 self?.sendExchange(for: match, to: participant)
@@ -1328,11 +1305,16 @@ extension Simple {
         // To fix this I am specifying the recipient playerID in the data.
         // Not sure how else I can avoid turn holder from replying.
         
-        var recipients = [recipient]
-        if recipient != currentParticipant {
-            print("Exchange recipient is not turn holder, so adding currentParticipant.")
-            recipients.append(currentParticipant)
-        }
+
+        let recipients = [recipient]
+
+        // UPDATE:
+        // Apple feedback on support ticket suggests there is no need to add
+        // turn holder to the exchange. So I'm removing the below:
+        // if recipient != currentParticipant {
+        //     print("Exchange recipient is not turn holder, so adding currentParticipant.")
+        //     recipients.append(currentParticipant)
+        // }
         
         guard let ID = recipient.player?.playerID, let exchangeData = data(fromCodable: ["recipient": ID]) else {
             print("Failed to create data")

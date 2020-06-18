@@ -11,6 +11,15 @@ import GameKit
 
 enum Utility {
     
+    
+    /// A simply alert with OK action.
+    ///
+    /// Tappin the only action available will execute the provided closure.
+    /// - Parameters:
+    ///   - title: The title of the alert.
+    ///   - message: The message seen below the title in the alert.
+    ///   - closure: The closure to execute when the user dismisses the alert.
+    /// - Returns: <#description#>
     static func alert(_ title: String, message: String? = nil, closure: (()->Void)? = nil) -> UIAlertController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let ok = UIAlertAction(title: "OK", style: .cancel) { _ in
