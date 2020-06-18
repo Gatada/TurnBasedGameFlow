@@ -1,5 +1,5 @@
 //
-//  Interface.swift
+//  Utility.swift
 //  TurnBasedGameFlow
 //
 //  Created by Johan Basberg on 11/06/2020.
