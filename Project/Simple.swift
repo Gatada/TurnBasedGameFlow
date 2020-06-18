@@ -650,9 +650,7 @@ class Simple: UIViewController {
             return
         }
         
-        let stringArguments = [String]()
-
-        exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: exchangeResponse) { [weak self] error in
+        exchange.reply(withLocalizableMessageKey: ":-)", arguments: arguments, data: exchangeResponse) { [weak self] error in
             if let receivedError = error {
                 // print("Failed to reply to exchange \(exchange.exchangeID):")
                 self?.handleError(receivedError)
@@ -944,21 +942,25 @@ extension Simple: GKLocalPlayerListener {
                 self.player(sender, receivedExchangeRequest: exchange, for: match)
             }
             
-            // guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-            //     print("Failed to merge match data")
-            //     return
-            // }
-            //
-            // mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            //     if let receivedError = error {
-            //         print("Failed to save merged data from exchanges:")
-            //         self?.handleError(receivedError)
-            //     } else {
-            //         print("Successfully merged data from exchanges!")
-            //         self?.refreshInterface()
-            //         self?.view.throb(duration: 0.05, toScale: 0.85)
-            //     }
-            // }
+             guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
+                 print("Failed to merge match data")
+                 return
+             }
+            
+             mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+                 switch result {
+                 case .failure(let error):
+                     self?.handleError(error)
+                 case .success(let didMergeCompletedExchanges):
+                     if didMergeCompletedExchanges {
+                         print("Updated match data with completed exchanges.")
+                         self?.refreshInterface()
+                         self?.view.throb(duration: 0.05, toScale: 0.85)
+                     } else {
+                         print("Match data remains unchanged.")
+                     }
+                 }
+             }
             
         } else  if match.matchID == self.currentMatch?.matchID {
             
@@ -1044,11 +1046,16 @@ extension Simple: GKLocalPlayerListener {
         
         let recipientName = exchange.recipients.first?.player?.displayName ?? "N/A"
         
-        guard let data = exchange.data, let array: [String] = codableInstance(from: data), let exchangeOutcome = array.first else {
+        guard let data = exchange.data else {
             print("Exchange \(exchange.exchangeID) has no data!")
             return
         }
-        
+
+        guard let array: [String] = codableInstance(from: data), let exchangeOutcome = array.first else {
+            print("Exchange \(exchange.exchangeID) has unexpected data format!")
+            return
+        }
+
         let exchangeResult = Utility.alert("The exchange with \(recipientName) was \(exchangeOutcome)!", message: "Tapping OK will resolve the exchange and make it official.") { [weak self] in
             
             guard let placeholderData = self?.stringArrayToData(stringArray: [Date().description]) else {
@@ -1121,21 +1128,26 @@ extension Simple: GKLocalPlayerListener {
             return
         }
 
-        guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
-            
-            // This exchange is intended for another player, so it is ignored
-            // by sending nil as accepted status.
-            
-            ignore(exchange)
-            currentMatch = match
-            
-            refreshInterface()
-            view.throb(duration: 0.05, toScale: 0.85)
-            
-            return
-        }
+        // Removing this, as Apple Tech Support in the ticket confirms that the turn holder
+        // does NOT need to be included in the exchange - despite:
+        //
+        // "All exchanges must include the current turn holder" from
+        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
+        //
+        // guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
+        //
+        //     // This exchange is intended for another player, so it is ignored
+        //     // by sending nil as accepted status.
+        //
+        //     ignore(exchange)
+        //     currentMatch = match
+        //
+        //     refreshInterface()
+        //     view.throb(duration: 0.05, toScale: 0.85)
+        //
+        //     return
+        // }
         
-                
         printDetailsForExchange(exchange, for: match, with: sender)
         
         let alert = acceptTradeAlert(for: exchange)
@@ -1209,7 +1221,7 @@ extension Simple {
     
     func tradeAlertForMatch(_ match: GKTurnBasedMatch) -> UIAlertController {
         let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
-        for participant in match.participants {
+        for participant in match.participants where participant.player?.playerID != GKLocalPlayer.local.playerID {
 
             // Supposedly there should be no reason to verify that the particiapnt is indeed a real player.
             // guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
