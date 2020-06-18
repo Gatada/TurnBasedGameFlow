@@ -69,4 +69,10 @@ enum Utility {
         return data
     }
     
+    static var timestamp: String {
+        let date = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss.SSS"
+        return dateFormatter.string(from: date)
+    }
 }

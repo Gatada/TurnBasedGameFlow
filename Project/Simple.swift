@@ -796,6 +796,7 @@ extension Simple: GKLocalPlayerListener {
             –––––––––––––––––––––
             PLAYER WANTS TO QUIT!
             –––––––––––––––––––––
+            \(Utility.timestamp)
 
             """)
 
@@ -828,7 +829,8 @@ extension Simple: GKLocalPlayerListener {
             –––––––––––––––––––––––––––
             MATCH ENDED EVENT RECEIVED!
             –––––––––––––––––––––––––––
-
+            \(Utility.timestamp)
+            
             """)
         
         let alreadyViewingMatch = self.currentMatch?.matchID == match.matchID
@@ -890,6 +892,7 @@ extension Simple: GKLocalPlayerListener {
             ––––––––––––––––––––
             TURN EVENT RECEIVED!
             ––––––––––––––––––––
+            \(Utility.timestamp)
 
             """)
         
@@ -984,6 +987,8 @@ extension Simple: GKLocalPlayerListener {
             RECEIVED EXCHANGE REQUEST!
             ––––––––––––––––––––––––––
             local player: \(player.displayName)
+            \(Utility.timestamp)
+
 
             """)
         
@@ -1064,6 +1069,7 @@ extension Simple: GKLocalPlayerListener {
             ––––––––––––––––––––––––––
             RECEIVED EXCHANGE REPLIES!
             ––––––––––––––––––––––––––
+            \(Utility.timestamp)
 
             """)
 
@@ -1101,7 +1107,8 @@ extension Simple: GKLocalPlayerListener {
             –––––––––––––––––––––––––––––––
             RECEIVED EXCHANGE CANCELLATION!
             –––––––––––––––––––––––––––––––
-
+            \(Utility.timestamp)
+            
             """)
 
         // print("\nExchange creator \(exchange.sender.player?.displayName ?? "N/A") cancelled the exchange \(exchange.exchangeID).")
