@@ -29,6 +29,7 @@ enum Utility {
         return alert
     }
     
+    /// Returns a string including the display names of all participants, except the local player.
     static func opponentNamesForMatch(_ match: GKTurnBasedMatch) -> String {
         var opponents = ""
         var comma = ""
@@ -51,6 +52,21 @@ enum Utility {
             }
         }
         return opponents
+    }
+    
+    
+    static func data<T: Codable>(fromCodable instance: T) -> Data? {
+        guard let data = try? JSONEncoder().encode(instance) else {
+            return nil
+        }
+        return data
+    }
+    
+    static func codableInstance<T: Codable>(from data: Data) -> T? {
+        guard let data = try? JSONDecoder().decode(T.self, from: data) else {
+            return nil
+        }
+        return data
     }
     
 }

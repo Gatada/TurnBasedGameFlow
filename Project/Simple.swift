@@ -541,21 +541,6 @@ class Simple: UIViewController {
       return try? JSONSerialization.data(withJSONObject: stringArray, options: [])
     }
     
-    func data<T: Codable>(fromCodable instance: T) -> Data? {
-        guard let data = try? JSONEncoder().encode(instance) else {
-            return nil
-        }
-        return data
-    }
-    
-    func codableInstance<T: Codable>(from data: Data) -> T? {
-        guard let data = try? JSONDecoder().decode(T.self, from: data) else {
-            return nil
-        }
-        return data
-    }
-
-    
     //    func mergeMatch(_ match: GKTurnBasedMatch, with data: Data, for exchanges: [GKTurnBasedExchange], closure: ((Error?)->Void)?) {
     //        // print("Saving merged matchData.")
     //
@@ -645,12 +630,14 @@ class Simple: UIViewController {
         }
         let arguments = [argument]
         
-        guard let exchangeResponse = stringArrayToData(stringArray: arguments) else {
+        guard let responseData = Utility.data(fromCodable: arguments) else {
             assertionFailure("Failed to encode arguments to data for exchange reply.")
             return
         }
         
-        exchange.reply(withLocalizableMessageKey: ":-)", arguments: arguments, data: exchangeResponse) { [weak self] error in
+        let stringArguments = [String]()
+        
+        exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: responseData) { [weak self] error in
             if let receivedError = error {
                 // print("Failed to reply to exchange \(exchange.exchangeID):")
                 self?.handleError(receivedError)
@@ -988,6 +975,51 @@ extension Simple: GKLocalPlayerListener {
 
     // MARK: - Exchange Related -
     
+    
+    func player(_ player: GKPlayer, receivedExchangeRequest exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
+        
+        print( """
+
+            ––––––––––––––––––––––––––
+            RECEIVED EXCHANGE REQUEST!
+            ––––––––––––––––––––––––––
+            local player: \(player.displayName)
+
+            """)
+        
+        currentMatch = match
+        
+        guard let sender = exchange.sender.player else {
+            print("Exchange request has no sender!")
+            return
+        }
+
+        // Removing this as Apple Tech Support confirms that the turn holder
+        // does NOT need to be included in the exchange - despite documentation:
+        //
+        // "All exchanges must include the current turn holder" from
+        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
+        //
+        // guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
+        //
+        //     // This exchange is intended for another player, so it is ignored
+        //     // by sending nil as accepted status.
+        //
+        //     ignore(exchange)
+        //     currentMatch = match
+        //
+        //     refreshInterface()
+        //     view.throb(duration: 0.05, toScale: 0.85)
+        //
+        //     return
+        // }
+        
+        printDetailsForExchange(exchange, for: match, with: sender)
+        
+        let alert = acceptTradeAlert(for: exchange)
+        alertManager?.presentOrQueueAlert(alert, ofType: .respondingToExchange)
+    }
+    
     // From: https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/GameKit_Guide/ImplementingaTurn-BasedMatch/ImplementingaTurn-BasedMatch.html
     //
     // 1) After an exchange request is created, the players in the recipients array
@@ -1046,17 +1078,19 @@ extension Simple: GKLocalPlayerListener {
         
         let recipientName = exchange.recipients.first?.player?.displayName ?? "N/A"
         
-        guard let data = exchange.data else {
-            print("Exchange \(exchange.exchangeID) has no data!")
-            return
-        }
+        guard let data = exchange.replies?.first?.data else {
+             print("Exchange \(exchange.exchangeID) has no data!")
+             return
+         }
+        
+         print("Data received: \(String(describing: String(data: data, encoding: String.Encoding.utf8)))")
 
-        guard let array: [String] = codableInstance(from: data), let exchangeOutcome = array.first else {
-            print("Exchange \(exchange.exchangeID) has unexpected data format!")
-            return
-        }
+        guard let array: [String] = Utility.codableInstance(from: data), let exchangeOutcome = array.first else {
+             print("Exchange \(exchange.exchangeID) has unexpected data format!")
+             return
+         }
 
-        let exchangeResult = Utility.alert("The exchange with \(recipientName) was \(exchangeOutcome)!", message: "Tapping OK will resolve the exchange and make it official.") { [weak self] in
+        let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: "Tapping OK will resolve the exchange and make it official.") { [weak self] in
             
             guard let placeholderData = self?.stringArrayToData(stringArray: [Date().description]) else {
                 print("Failed to merge match data")
@@ -1103,55 +1137,6 @@ extension Simple: GKLocalPlayerListener {
         
         // Reload match data
         refreshInterface()
-    }
-
-    func player(_ player: GKPlayer, receivedExchangeRequest exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch) {
-        
-        print( """
-
-            ––––––––––––––––––––––––––
-            RECEIVED EXCHANGE REQUEST!
-            ––––––––––––––––––––––––––
-            local player: \(player.displayName)
-
-            """)
-        
-        currentMatch = match
-        
-        guard let data = exchange.data, let payload: [String: String] = codableInstance(from: data) else {
-            print("Exchange missing data!")
-            return
-        }
-        
-        guard let sender = exchange.sender.player else {
-            print("Exchange request has no sender!")
-            return
-        }
-
-        // Removing this, as Apple Tech Support in the ticket confirms that the turn holder
-        // does NOT need to be included in the exchange - despite:
-        //
-        // "All exchanges must include the current turn holder" from
-        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
-        //
-        // guard let ID = payload["recipient"], GKLocalPlayer.local.playerID == ID else {
-        //
-        //     // This exchange is intended for another player, so it is ignored
-        //     // by sending nil as accepted status.
-        //
-        //     ignore(exchange)
-        //     currentMatch = match
-        //
-        //     refreshInterface()
-        //     view.throb(duration: 0.05, toScale: 0.85)
-        //
-        //     return
-        // }
-        
-        printDetailsForExchange(exchange, for: match, with: sender)
-        
-        let alert = acceptTradeAlert(for: exchange)
-        alertManager?.presentOrQueueAlert(alert, ofType: .respondingToExchange)
     }
 
 
@@ -1219,6 +1204,9 @@ extension Simple {
         return alert
     }
     
+    /// An alert allowing the creator of an exchange to select the player to trade with.
+    ///
+    /// For the sake of simplicity only a single recipient is supported.
     func tradeAlertForMatch(_ match: GKTurnBasedMatch) -> UIAlertController {
         let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
         for participant in match.participants where participant.player?.playerID != GKLocalPlayer.local.playerID {
@@ -1245,6 +1233,8 @@ extension Simple {
         return alert
     }
     
+    
+    /// Creates an alert allowing the recipient of an exchange to either accept, decline or ignore an exhange.
     func acceptTradeAlert(for exchange: GKTurnBasedExchange) -> UIAlertController {
         
         let message = exchange.message ?? "Do you want to trade?"
@@ -1292,11 +1282,6 @@ extension Simple {
         let stringArguments = [String]()
         let turnTimeout: TimeInterval = 120 // seconds
 
-        guard let currentParticipant = match.currentParticipant else {
-            assertionFailure("No match set for exchange")
-            return
-        }
-        
         // From the documentation:
         // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
         //
@@ -1317,18 +1302,18 @@ extension Simple {
         // To fix this I am specifying the recipient playerID in the data.
         // Not sure how else I can avoid turn holder from replying.
         
-
         let recipients = [recipient]
 
         // UPDATE:
-        // Apple feedback on support ticket suggests there is no need to add
-        // turn holder to the exchange. So I'm removing the below:
+        // Apple feedback suggests there is no need to add turn holder
+        // to the exchange. So I'm removing the below:
+        //
         // if recipient != currentParticipant {
         //     print("Exchange recipient is not turn holder, so adding currentParticipant.")
         //     recipients.append(currentParticipant)
         // }
         
-        guard let ID = recipient.player?.playerID, let exchangeData = data(fromCodable: ["recipient": ID]) else {
+        guard let ID = recipient.player?.playerID, let exchangeData = Utility.data(fromCodable: ["recipient": ID]) else {
             print("Failed to create data")
             return
         }

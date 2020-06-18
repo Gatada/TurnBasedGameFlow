@@ -11,7 +11,7 @@ import UIKit
 /// A structure used to associate an instance of a `UIAlertController` with
 /// an `AlertType` and match identifier.
 struct QueuedAlert {
-    weak var alert: UIAlertController?
+    var alert: UIAlertController?
     let type: AlertType
     let matchID: String?
 }
