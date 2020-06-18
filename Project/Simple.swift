@@ -1090,29 +1090,7 @@ extension Simple: GKLocalPlayerListener {
              return
          }
 
-        let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: "Tapping OK will resolve the exchange and make it official.") { [weak self] in
-            
-            guard let placeholderData = self?.stringArrayToData(stringArray: [Date().description]) else {
-                print("Failed to merge match data")
-                return
-            }
-
-            self?.mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
-                switch result {
-                case .failure(let error):
-                    self?.handleError(error)
-                case .success(let didMergeCompletedExchanges):
-                    if didMergeCompletedExchanges {
-                        print("Updated match data with completed exchanges.")
-                        self?.refreshInterface()
-                        self?.view.throb(duration: 0.05, toScale: 0.85)
-                    } else {
-                        print("No completed exchanges were found. Match data remains unchanged.")
-                    }
-                }
-            }
-        }
-        
+        let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil, closure: nil)
         alertManager?.presentOrQueueAlert(exchangeResult, withMatchID: match.matchID, ofType: .respondingToExchange)
     }
 
