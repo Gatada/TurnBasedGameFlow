@@ -261,27 +261,17 @@ class Simple: UIViewController {
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            
-            self?.refreshInterface()
-            
-            if let receivedError = error {
-                self?.handleError(receivedError)
-                return
-            }
-            
-            let matchData = Data()
-            // print("Update match \(self?.currentMatch?.matchID ?? "N/A")")
-            
-            self?.currentMatch?.saveCurrentTurn(withMatch: matchData) { [weak self] error in
-                if let receivedError = error {
-                    // print("Failed to update match \(self?.currentMatch?.matchID ?? "N/A"):")
-                    self?.handleError(receivedError)
-                    return
+        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+            switch result {
+            case .failure(let error):
+                self?.handleError(error)
+            case .success(let didMergeCompletedExchanges):
+                if didMergeCompletedExchanges {
+                    print("Updated match data with completed exchanges.")
+                    self?.refreshInterface()
+                } else {
+                    print("No completed exchanges were found. Match data remains unchanged.")
                 }
-                
-                // print("Updated match \(self?.currentMatch?.matchID ?? "N/A")")
-                self?.refreshInterface()
             }
         }
     }
@@ -732,7 +722,7 @@ class Simple: UIViewController {
         alertManager?.presentOrQueueAlert(alert, withMatchID: match.matchID, ofType: .waitingForExchangeReplies)
     }
     
-    func mergeCompletedExchangesAsNeeded(resolvedData: Data, closure: @escaping (Error?)->Void) {
+    func mergeCompletedExchangesAsNeeded(resolvedData: Data, closure: @escaping (Result<Bool, Error>)->Void) {
         
         guard let match = currentMatch else {
             assertionFailure("No match to merge exchanges with")
@@ -743,7 +733,7 @@ class Simple: UIViewController {
             // There are no completed exchanges to merge with match data, so
             // just call the closure.
             print("Found no completed exchanges to save!")
-            closure(nil)
+            closure(.success(false))
             return
         }
         
@@ -755,9 +745,9 @@ class Simple: UIViewController {
         match.saveMergedMatch(resolvedData, withResolvedExchanges: exchanges) { [weak self] error in
             if let receivedError = error {
                 self?.handleError(receivedError)
-                closure(receivedError)
+                closure(.failure(receivedError))
             } else {
-                closure(nil)
+                closure(.success(true))
             }
         }
     }
@@ -1093,14 +1083,18 @@ extension Simple: GKLocalPlayerListener {
             return
         }
         
-        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] error in
-            if let receivedError = error {
-                print("Failed to save merged data from exchanges:")
-                self?.handleError(receivedError)
-            } else {
-                print("Successfully merged data from exchanges!")
-                self?.refreshInterface()
-                self?.view.throb(duration: 0.05, toScale: 0.85)
+        mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+            switch result {
+            case .failure(let error):
+                self?.handleError(error)
+            case .success(let didMergeCompletedExchanges):
+                if didMergeCompletedExchanges {
+                    print("Updated match data with completed exchanges.")
+                    self?.refreshInterface()
+                    self?.view.throb(duration: 0.05, toScale: 0.85)
+                } else {
+                    print("No completed exchanges were found. Match data remains unchanged.")
+                }
             }
         }
     }
