@@ -1,15 +1,14 @@
 # TurnBasedGameFlow
 
 There are a couple of other skeleton projects out there, showing how GameKit is used.
-However, I have yet to find one that is up-to-date, shows everything with the bear minimum of code.
+However, I have yet to find one that is up-to-date, shows everything with a minimum of code.
 
-This Xcode project contains one view controller, Simple. It does everything: update the UI, deals with GameKit and all
-interaction from the player.
+This Xcode project contains one view controller, Simple. It does everything: updates the UI, deals with GameKit and all
+interactions from the player.
 
-The game data is empty on purpose. Everything except the GKTurnBasedExhange process works.
+The game data is just a date. Everything works, however any completed exchanges are not resolved until the match is reloaded by the current turn holder. According to Apple, the turn holder should receive a notification when an exchange is resolved - however I'm not seeing any event happening.
 
-If you know how to get exhanges to work properly, then please let me know. For now, I am getting server connection error
-every time I try to reply to an exchange.
+If you know how to get exhanges to work properly, then please let me know.
 
 ## Use Two Devices
 
@@ -21,3 +20,5 @@ find that committing the first turn on all the games helps. Of course, to avoid 
 # Feedback Welcome!
 
 If you know how to make exchanges work, please create a pull request.
+
+I hope you find this project useful.
