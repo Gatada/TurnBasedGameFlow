@@ -1258,7 +1258,7 @@ extension Simple {
     func sendExchange(for match: GKTurnBasedMatch, to recipient: GKTurnBasedParticipant) {
 
         let stringArguments = [String]()
-        let turnTimeout: TimeInterval = 120 // seconds
+        let exchangeTimeout: TimeInterval = self.turnTimeout / 2
 
         // From the documentation:
         // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
@@ -1296,7 +1296,7 @@ extension Simple {
             return
         }
         
-        match.sendExchange(to: recipients, data: exchangeData, localizableMessageKey: "You want to trade?", arguments: stringArguments, timeout: turnTimeout) { [weak self] exchange, error in
+        match.sendExchange(to: recipients, data: exchangeData, localizableMessageKey: "You want to trade?", arguments: stringArguments, timeout: exchangeTimeout) { [weak self] exchange, error in
             if let receivedError = error {
                 // print("Failed to send exchange for match \(self?.currentMatch?.matchID ?? "N/A"):")
                 self?.handleError(receivedError)
