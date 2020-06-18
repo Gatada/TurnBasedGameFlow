@@ -1096,7 +1096,10 @@ extension Simple: GKLocalPlayerListener {
              return
          }
 
-        let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil, closure: nil)
+        let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil) { [weak alertManager] in
+            alertManager?.advanceAlertQueueIfNeeded()
+        }
+        
         alertManager?.presentOrQueueAlert(exchangeResult, withMatchID: match.matchID, ofType: .respondingToExchange)
     }
 
