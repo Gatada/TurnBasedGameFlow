@@ -1089,7 +1089,7 @@ extension Simple: GKLocalPlayerListener {
              return
          }
         
-         print("Data received: \(String(describing: String(data: data, encoding: String.Encoding.utf8)))")
+         print("Data received: \(String(data: data, encoding: String.Encoding.utf8) ?? "")")
 
         guard let array: [String] = Utility.codableInstance(from: data), let exchangeOutcome = array.first else {
              print("Exchange \(exchange.exchangeID) has unexpected data format!")
