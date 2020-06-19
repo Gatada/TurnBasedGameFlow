@@ -42,12 +42,8 @@ enum AlertType: Int {
     /// Alert type offering the opportunity to select one recipient for the exchange.
     case creatingExchange = 200
     
-    /// Alert type used for the alert that is shown while waiting for a reply to the current exchange.
-    ///
-    /// This is only required as this app uses a highly simplified exchange structure.
-    case waitingForExchangeReplies
-    
-    /// Alert type used for the alert that lets the user accept, decline or resolve an exchange.
+    /// Alert type used for the alert that is shown while waiting for a reply (creator of exchange), and for
+    /// the alert shown to reply to an exchange (recipient).
     case respondingToExchange
     
     /// A generic alert that is associated with the currently displayed match.

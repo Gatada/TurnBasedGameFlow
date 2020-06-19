@@ -96,6 +96,7 @@ class Simple: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        print("Simple did appear.")
         refreshInterface()
     }
     
@@ -488,6 +489,8 @@ class Simple: UIViewController {
             default:
                 presentErrorWithMessage("GameKit Error \(code): \(error.localizedDescription)")
             }
+            
+            print("GameKit Error details: \(error)")
         }
         
         let givenError = error as NSError
@@ -651,7 +654,7 @@ class Simple: UIViewController {
     
     
     func awaitReplyOrCancelExchange(_ exchange: GKTurnBasedExchange, forMatch match: GKTurnBasedMatch) {
-        let alert = UIAlertController(title: "Exchange", message: "Awaiting reply or timeout.", preferredStyle: .actionSheet)
+        let alert = UIAlertController(title: "Exchange", message: "Waiting for reply, cancellation or timeout.", preferredStyle: .actionSheet)
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] action in
             let noArguments = [String]()
@@ -668,7 +671,7 @@ class Simple: UIViewController {
         }
         
         alert.addAction(cancel)
-        alertManager?.presentOrQueueAlert(alert, withMatchID: match.matchID, ofType: .waitingForExchangeReplies)
+        alertManager?.presentOrQueueAlert(alert, withMatchID: match.matchID, ofType: .respondingToExchange)
     }
     
     func mergeCompletedExchangesAsNeeded(resolvedData: Data, closure: @escaping (Result<Bool, Error>)->Void) {
@@ -740,7 +743,7 @@ extension Simple: GKTurnBasedMatchmakerViewControllerDelegate {
     func turnBasedMatchmakerViewControllerWasCancelled(_ viewController: GKTurnBasedMatchmakerViewController) {
         // print("Match Maker was cancelled")
         self.dismiss(animated: true) {
-            // print("Dismissed Match Maker")
+            print("Dismissed Match Maker after match creation was cancelled.")
         }
     }
     
@@ -756,7 +759,7 @@ extension Simple: GKTurnBasedMatchmakerViewControllerDelegate {
         }
         
         self.dismiss(animated: true) {
-            print("Dismissed Match Maker")
+            print("Dismissed Match Maker after match creation failed with error.")
         }
     }
     
@@ -910,7 +913,11 @@ extension Simple: GKLocalPlayerListener {
             play()
             
             if matchMaker != nil {
-                dismiss(animated: true, completion: nil)
+                dismiss(animated: true) {
+                    if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
+                        self.player(sender, receivedExchangeRequest: exchange, for: match)
+                    }
+                }
             }
             
             // Check if there is an ongoing exchange to handle:
@@ -918,39 +925,35 @@ extension Simple: GKLocalPlayerListener {
             // launch after having received the exchange. After that we have
             // to present the exchange manually.
             
-            //            if let exchanges = match.exchanges {
-            //                for exchange in exchanges {
-            //                    guard let exchangeCreator = exchange.sender.player else {
-            //                        // print("Skipping exchange \(exchange.exchangeID) without a sender!")
-            //                        continue
-            //                    }
-            //                    printDetailsForExchange(exchange, for: match, with: exchangeCreator)
-            //                }
-            //            }
-            
-            if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
-                self.player(sender, receivedExchangeRequest: exchange, for: match)
+            if let exchanges = match.exchanges {
+                for exchange in exchanges {
+                    guard let exchangeCreator = exchange.sender.player else {
+                        print("Skipping exchange \(exchange.exchangeID) without a sender!")
+                        continue
+                    }
+                    printDetailsForExchange(exchange, for: match, with: exchangeCreator)
+                }
             }
             
-             guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
-                 print("Failed to merge match data")
-                 return
-             }
+            guard let placeholderData = stringArrayToData(stringArray: [Date().description]) else {
+                print("Failed to merge match data")
+                return
+            }
             
-             mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
-                 switch result {
-                 case .failure(let error):
-                     self?.handleError(error)
-                 case .success(let didMergeCompletedExchanges):
-                     if didMergeCompletedExchanges {
-                         print("Updated match data with completed exchanges.")
-                         self?.refreshInterface()
-                         self?.view.throb(duration: 0.05, toScale: 0.85)
-                     } else {
-                         print("Match data remains unchanged.")
-                     }
-                 }
-             }
+            mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+                switch result {
+                case .failure(let error):
+                    self?.handleError(error)
+                case .success(let didMergeCompletedExchanges):
+                    if didMergeCompletedExchanges {
+                        print("Updated match data with completed exchanges.")
+                        self?.refreshInterface()
+                        self?.view.throb(duration: 0.05, toScale: 0.85)
+                    } else {
+                        print("Match data remains unchanged.")
+                    }
+                }
+            }
             
         } else  if match.matchID == self.currentMatch?.matchID {
             
@@ -1073,7 +1076,7 @@ extension Simple: GKLocalPlayerListener {
 
             """)
 
-        alertManager?.dismissAlert(ofType: .waitingForExchangeReplies)
+        alertManager?.dismissAlert(ofType: .respondingToExchange)
         currentMatch = match
         
         // The exchange is ready for processing: all invitees have responded.
@@ -1120,8 +1123,9 @@ extension Simple: GKLocalPlayerListener {
         let alert = Utility.alert("Exchange with \(sender) was cancelled", message: nil) { [weak alertManager] in
             alertManager?.advanceAlertQueueIfNeeded()
         }
+        
         alertManager?.presentOrQueueAlert(alert, ofType: .exchangeCancellationNotification)
-        alertManager?.dismissAlert(ofType: .respondingToExchange)
+        alertManager?.dismissAlert(ofType: .respondingToExchange)        
         
         // Reload match data
         refreshInterface()
@@ -1235,14 +1239,22 @@ extension Simple {
             self?.refreshInterface()
             alertManager?.advanceAlertQueueIfNeeded()
         }
-
-        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self, weak alertManager] action in
-            self?.replyToExchange(exchange, accepted: false)
-            self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
+        
+        let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self] action in
+            let noArguments = [String]()
+            exchange.cancel(withLocalizableMessageKey: ":-/", arguments: noArguments) { [weak self] error in
+                if let receivedError = error {
+                    print("Failed to cancel exchange \(exchange.exchangeID):")
+                    self?.handleError(receivedError)
+                } else {
+                    print("Cancelled exchange \(exchange.exchangeID)!")
+                }
+                self?.refreshInterface()
+            }
+            self?.alertManager?.advanceAlertQueueIfNeeded()
         }
 
-        let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self, weak alertManager] action in
+        let ignore = UIAlertAction(title: "Decide Later", style: .cancel) { [weak self, weak alertManager] action in
             
             // There is no way to cancel a received request.
             // Either reply with a decline or let the request time-out.
