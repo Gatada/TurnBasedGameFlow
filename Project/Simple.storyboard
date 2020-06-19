@@ -239,6 +239,9 @@
                                         <state key="normal" title="Quit In Turn!">
                                             <color key="titleColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
+                                        <state key="disabled">
+                                            <color key="titleColor" systemColor="systemGray2Color" red="0.68235294120000001" green="0.68235294120000001" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
                                         <connections>
                                             <action selector="quitMatchInTurnTap:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1vp-ww-MIQ"/>
                                         </connections>

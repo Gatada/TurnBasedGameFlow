@@ -136,8 +136,14 @@ class Simple: UIViewController {
         endTurnLose.isEnabled = isResolvingTurn && opponentsStillPlaying
         
         // These two buttons occupy same screen real-estate:
-        quitInTurn.isHidden = (!isResolvingTurn && !gameEnded) || gameEnded
+        quitInTurn.isHidden = gameEnded
         rematch.isHidden = !gameEnded
+        
+        quitInTurn.isEnabled = !hasLocalOutcome
+        
+        if !quitInTurn.isHidden {
+            quitInTurn.setTitle(isResolvingTurn ? "Quit In Turn!" : "Quit Out-of-Turn!", for: UIControl.State())
+        }
         
         beginExchange.isEnabled = !isMatching && !gameEnded && opponentsStillPlaying
 
@@ -480,6 +486,9 @@ class Simple: UIViewController {
     func handleError(_ error: Error) {
         
         func gamekitError(_ code: Int) {
+            
+            // TODO: JJ
+            
             switch code {
             case 3:
                 presentErrorWithMessage("Error communicating with the server.")
@@ -500,6 +509,8 @@ class Simple: UIViewController {
         default:
             presentErrorWithMessage("Received error \(givenError.domain) (\(givenError.code)): \(error.localizedDescription)")
         }
+        
+        print("\(givenError.domain) Error details: \(error)")
     }
     
     func presentErrorWithMessage(_ message: String, title: String = "Received Error") {
@@ -620,6 +631,16 @@ class Simple: UIViewController {
         replyToExchange(exchange, accepted: nil)
     }
     
+    @discardableResult
+    func presentNextExchange() -> Bool {
+        if let match = currentMatch, let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
+            self.player(sender, receivedExchangeRequest: exchange, for: match)
+            return true
+        } else {
+            return false
+        }
+    }
+    
     func replyToExchange(_ exchange: GKTurnBasedExchange, accepted: Bool?) {
         
         let argument: String
@@ -738,9 +759,9 @@ class Simple: UIViewController {
 extension Simple: GKTurnBasedMatchmakerViewControllerDelegate {
     
     func turnBasedMatchmakerViewControllerWasCancelled(_ viewController: GKTurnBasedMatchmakerViewController) {
-        // print("Match Maker was cancelled")
+
         self.dismiss(animated: true) {
-            // print("Dismissed Match Maker")
+            print("Dismissed Match Maker as match creation was cancelled.")
         }
     }
     
@@ -756,7 +777,7 @@ extension Simple: GKTurnBasedMatchmakerViewControllerDelegate {
         }
         
         self.dismiss(animated: true) {
-            print("Dismissed Match Maker")
+            print("Dismissed Match Maker due to an error creating a match.")
         }
     }
     
@@ -777,8 +798,6 @@ extension Simple: GKLocalPlayerListener {
         print("\(player.displayName) did modify saved game!")
     }
     
-    
-
     // This extension is critical, as it handles all Game Center and
     // `GKTurnBasedMatch` related events.
 
@@ -801,6 +820,27 @@ extension Simple: GKLocalPlayerListener {
             """)
 
 
+        guard match.currentParticipant?.player?.playerID == player.playerID  else {
+            
+            // Player want to quit out of turn.
+            //
+            // Quitting will not cause the game to end.
+            //
+            // The quitter will not be notified of the final result when the
+            // game eventually ends.
+            
+            match.participantQuitOutOfTurn(with: .lost) { [weak self] error in
+                            if let receivedError = error {
+                    print("Failed to quit out of turn from match \(match.matchID) with error: \(receivedError)")
+                } else {
+                    print("Match \(match.matchID) was successfully left by local player out of turn.")
+                    self?.refreshInterface()
+                }
+            }
+            return
+        }
+        
+        
         let nextUp = nextParticipantsForMatch(match, didQuit: true)
         
         // This could be anything, based on game logic:
@@ -910,7 +950,13 @@ extension Simple: GKLocalPlayerListener {
             play()
             
             if matchMaker != nil {
-                dismiss(animated: true, completion: nil)
+                dismiss(animated: true) { [weak self] in
+                    if self?.presentNextExchange() == false {
+                        self?.alertManager?.advanceAlertQueueIfNeeded()
+                    }
+                }
+            } else if self.presentNextExchange() == false {
+                self.alertManager?.advanceAlertQueueIfNeeded()
             }
             
             // Check if there is an ongoing exchange to handle:
@@ -1233,13 +1279,17 @@ extension Simple {
         let accept = UIAlertAction(title: "Accept", style: .default) { [weak self, weak alertManager] action in
             self?.replyToExchange(exchange, accepted: true)
             self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
+            if self?.presentNextExchange() == false {
+                alertManager?.advanceAlertQueueIfNeeded()
+            }
         }
 
         let decline = UIAlertAction(title: "Decline", style: .destructive) { [weak self, weak alertManager] action in
             self?.replyToExchange(exchange, accepted: false)
             self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
+            if self?.presentNextExchange() == false {
+                alertManager?.advanceAlertQueueIfNeeded()
+            }
         }
 
         let ignore = UIAlertAction(title: "Ignore", style: .cancel) { [weak self, weak alertManager] action in
@@ -1248,7 +1298,9 @@ extension Simple {
             // Either reply with a decline or let the request time-out.
             
             self?.refreshInterface()
-            alertManager?.advanceAlertQueueIfNeeded()
+            if self?.presentNextExchange() == false {
+                alertManager?.advanceAlertQueueIfNeeded()
+            }
         }
         
         alert.addAction(accept)
