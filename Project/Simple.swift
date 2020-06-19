@@ -502,6 +502,7 @@ class Simple: UIViewController {
             fallthrough
         default:
             presentErrorWithMessage("Received error \(givenError.domain) (\(givenError.code)): \(error.localizedDescription)")
+            print("\(givenError.domain) Error details: \(error)")
         }
     }
     
