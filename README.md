@@ -13,9 +13,11 @@ This projects shows how to correctly:
 	* Reply to an exchange or let it time out, which moves the `.active` exchange to `.completed`.
 	* And finally how turn holder resolves a completed exchange (happens only when loading the game).
 
-The game data is just a date. Everything works, however any completed exchanges are not resolved until the match is reloaded by the current turn holder. According to Apple, the turn holder should receive a notification when an exchange is completed, however this is not happening.
+The app uses a string as game data. For every turn, update and exchange a new string is appended to the match data. The tail of the string is shown in the interface as Match Data.
 
-I have reached out to Apple to get this resolved.
+Everything works as intended, however completed exchanges are only resolved when the turn holder loads the game.
+
+According to Apple, the turn holder should receive a notification when an exchange is completed, however this is not happening. I have reached out to Apple to get this resolved.
 
 ## Use Two or Three Devices
 
