@@ -9,6 +9,8 @@
 import UIKit
 import GameKit
 
+
+/// A namespace for universally useful methods.
 enum Utility {
     
     

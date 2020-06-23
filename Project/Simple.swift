@@ -182,10 +182,12 @@ class Simple: UIViewController {
         opponentStatus.text = aggrigateStatus
         opponentOutcome.text = aggrigateOutcome
         
-        if let data = match.matchData {
-            turnSequence.text = Utility.codableInstance(from: data)
+        if let data = match.matchData, let dataAsString: String = Utility.codableInstance(from: data) {
+            turnSequence.text = dataAsString
+            print("Match data: \(dataAsString)")
         } else {
             turnSequence.text = " "
+            print("Match data: n/a")
         }
         
         exchangeHistory.text = "\(match.activeExchanges?.count ?? 0) active / \(match.completedExchanges?.count ?? 0) completed / \(match.exchanges?.count ?? 0) total"
@@ -277,7 +279,7 @@ class Simple: UIViewController {
 
         print("Update match \(match.matchID)")
         
-        guard let matchData = Utility.data(fromCodable: [Date().description]) else {
+        guard let matchData = updatedMatchDataWithString(stringForUpdateInMatch(match), forMatch: match) else {
             print("Failed to merge match data")
             return
         }
@@ -308,7 +310,16 @@ class Simple: UIViewController {
         
         let nextParticipants = self.nextParticipantsForMatch(match)
         let timeout = self.turnTimeout
-        let updatedData = Data()
+        
+        var turns: String = ""
+        if let data = match.matchData, let receivedTurns: String = Utility.codableInstance(from: data) {
+            turns += receivedTurns
+        }
+        
+        guard let updatedData = Utility.data(fromCodable: turns + stringForEndTurnInMatch(match)) else {
+            assertionFailure("Failed to encode match data")
+            return
+        }
         
         // Localized message to be set at end of turn or game:
         self.currentMatch?.setLocalizableMessageWithKey(":-)", arguments: nil)
@@ -393,10 +404,27 @@ class Simple: UIViewController {
             if let receivedError = error {
                 // print("Failed to start rematch!")
                 self?.handleError(receivedError)
-            } else {
+            } else if let match = rematch {
                 // print("Successfully created rematch \(rematch?.matchID ?? "N/A").")
-                self?.currentMatch = rematch
-                self?.refreshInterface()
+                self?.currentMatch = match
+                
+                guard let data = Utility.data(fromCodable: "Rematch") else {
+                    assertionFailure("Failed to encode intial match data")
+                    self?.currentMatch = nil
+                    self?.refreshInterface()
+                    return
+                }
+                
+                rematch?.saveMergedMatch(data, withResolvedExchanges: [], completionHandler: { [weak self] error in
+                    if let receivedError = error {
+                        print("Failed to initialize rematch")
+                        self?.handleError(receivedError)
+                        self?.refreshInterface()
+                    } else {
+                        print("Successfully initalized rematch \(match.matchID)!")
+                        self?.refreshInterface()
+                    }
+                })
             }
         }
     }
@@ -458,7 +486,11 @@ class Simple: UIViewController {
                 // The authentication controller is only received once during the
                 // launch of the app, and only when the player is not already logged in.
                 
-                self?.show(authenticationController, sender: self)
+                self?.present(authenticationController, animated: true, completion: {
+                    print("Presented Game Center authentication controller.")
+                })
+                
+                // self?.show(authenticationController, sender: self)
                 // print("User needs to authenticate as a player.")
                 
             } else if self?.localPlayerIsAuthenticated == false {
@@ -495,37 +527,90 @@ class Simple: UIViewController {
     }
     
     // MARK: - HELPERS
+    
+    
+    /// Adds the provided string to the match data string and returns the updated data.
+    func updatedMatchDataWithString(_ update: String, forMatch match: GKTurnBasedMatch) -> Data? {
+        guard let matchData = match.matchData else {
+            assertionFailure("Provided match does not have match data")
+            return nil
+        }
+        
+        var history = ""
 
+        if let existingHistory: String = Utility.codableInstance(from: matchData) {
+            history = existingHistory
+        }
+        
+        history += update
+        
+        guard let placeholderData = Utility.data(fromCodable: history) else {
+            print("Failed to create data")
+            return nil
+        }
+        
+        return placeholderData
+    }
+    
+    
+
+    /// A string appended to the match data when the turn holder does an update.
+    ///
+    /// For this demo the match data is only a String.
+    func stringForEndTurnInMatch(_ match: GKTurnBasedMatch) -> String {
+        let name = match.currentParticipant?.player?.displayName ?? "??"
+        return "|" + name[...2]
+    }
     
     /// A string appended to the match data when the turn holder does an update.
     ///
     /// For this demo the match data is only a String.
-    var updateStringForLocalPlayer: String {
-        guard let match = currentMatch else {
-            return ""
-        }
-        if let turnHolder = match.currentParticipant?.player?.displayName {
-            return turnHolder
-        } else {
-            return "n/a"
-        }
+    func stringForUpdateInMatch(_ match: GKTurnBasedMatch) -> String {
+        let name = match.currentParticipant?.player?.displayName ?? "??"
+        return "•" + name[...2]
     }
 
     /// A string appended to the match data when an exchange is resolved.
     ///
     /// For this demo the match data is only a String.
-    func resultStringForCompletedExchange(_ exchange: GKTurnBasedExchange) -> String? {
+    func stringForCompletedExchange(_ exchange: GKTurnBasedExchange) -> String? {
+        
+        let requesterName = exchange.sender.player?.displayName ?? "??"
+        var outcome = "|" + requesterName[...2] + ":"
         
         guard let replies = exchange.replies else {
             // No replies, so no change to match data.
             return nil
         }
         
+        var divider = ""
+        
         for reply in replies {
-            let reply.data
+            
+            let name = (reply.recipient.player?.displayName ?? "??")[...2]
+            
+            guard let replyData = reply.data else {
+                print("Reply missing data")
+                continue
+            }
+            
+            guard let decision: String = Utility.codableInstance(from: replyData) else {
+                fatalError("Failed to decode reply data to String")
+            }
+            
+            switch decision {
+            case "accepted":
+                outcome += divider + name + "/a"
+            case "declined":
+                outcome += divider + name + "/d"
+            default:
+                // Exchange was probably ignored.
+                outcome += divider + name + "/i"
+            }
+            divider = "•"
         }
         
-        return "|"
+        return outcome
     }
     
     /// A string appended to the match data when the turn holder does an update.
@@ -625,6 +710,8 @@ class Simple: UIViewController {
     //        }
     //    }
     
+
+    
     /// Ends the match.
     ///
     /// - Important: Before your game calls this method, the matchOutcome property on each
@@ -632,12 +719,17 @@ class Simple: UIViewController {
     /// GKTurnBasedMatch.Outcome.none.
     func endCurrentMatch() {
         
-        guard let placeholderData = Utility.data(fromCodable: [Date().description]) else {
-            print("Failed to create data")
+        guard let match = currentMatch else {
+            assertionFailure("No match is set when calling endCurrentMatch.Button should have been disabled")
             return
         }
         
-        currentMatch?.endMatchInTurn(withMatch: placeholderData) { [weak self] error in
+        guard let updatedMatchData = updatedMatchDataWithString(stringForEndTurnInMatch(match), forMatch: match) else {
+            assertionFailure("No match was set when trying to end match")
+            return
+        }
+
+        match.endMatchInTurn(withMatch: updatedMatchData) { [weak self] error in
             if let receivedError = error {
                 // print("Failed to end game for match \(self?.currentMatch?.matchID ?? "N/A"):")
                 self?.handleError(receivedError)
@@ -897,7 +989,8 @@ extension Simple: GKLocalPlayerListener {
         // This could be anything, based on game logic:
         let outcome = GKTurnBasedMatch.Outcome.quit
         
-        guard let placeholderData = Utility.data(fromCodable: [Date().description]) else {
+        let turnString = stringForEndTurnInMatch(match) + "/q"
+        guard let placeholderData = updatedMatchDataWithString(turnString, forMatch: match) else {
             print("Failed to create data")
             return
         }
@@ -999,6 +1092,24 @@ extension Simple: GKLocalPlayerListener {
             
             currentMatch = match
             play()
+                        
+            if match.matchData?.isEmpty == true, let data = Utility.data(fromCodable: "New") {
+                // Match is new. No match data has been merged yet.
+                match.saveMergedMatch(data, withResolvedExchanges: []) { [weak self] error in
+                    if let receivedError = error {
+                        print("Failed to initialize new game with initial data")
+                        self?.handleError(receivedError)
+                    } else {
+                        print("Successfully initialized match \(match.matchID)!")
+                        self?.refreshInterface()
+                    }
+                }
+            } else {
+                print("Match \(match.matchID) already has match data.")
+            }
+            
+            // Present first active exchange to player, but only after
+            // dismissing the match maker - if it is presented:
             
             if matchMaker != nil {
                 dismiss(animated: true) { [weak self] in
@@ -1024,30 +1135,43 @@ extension Simple: GKLocalPlayerListener {
             //                    printDetailsForExchange(exchange, for: match, with: exchangeCreator)
             //                }
             //            }
+
+            /// Present the player with an active exchange.
+            // if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
+            //     self.player(sender, receivedExchangeRequest: exchange, for: match)
+            // }
             
-            if let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
-                self.player(sender, receivedExchangeRequest: exchange, for: match)
+            
+            /// Merge the completed exchanges - if there are any.
+            if let completedExchanges = match.completedExchanges {
+                var exchangeResult = ""
+                
+                for exchange in completedExchanges {
+                    if let exchangeString = stringForCompletedExchange(exchange) {
+                        exchangeResult += exchangeString
+                    }
+                }
+                
+                guard let placeholderData = updatedMatchDataWithString(exchangeResult, forMatch: match) else {
+                    print("Failed to merge match data")
+                    return
+                }
+                
+                mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+                    switch result {
+                    case .failure(let error):
+                        self?.handleError(error)
+                    case .success(let didMergeCompletedExchanges):
+                        if didMergeCompletedExchanges {
+                            print("Updated match data with completed exchanges.")
+                            self?.refreshInterface()
+                            self?.view.throb(duration: 0.05, toScale: 0.85)
+                        } else {
+                            print("Match data remains unchanged.")
+                        }
+                    }
+                }
             }
-            
-            guard let placeholderData = Utility.data(fromCodable: [Date().description]) else {
-                 print("Failed to merge match data")
-                 return
-             }
-            
-             mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
-                 switch result {
-                 case .failure(let error):
-                     self?.handleError(error)
-                 case .success(let didMergeCompletedExchanges):
-                     if didMergeCompletedExchanges {
-                         print("Updated match data with completed exchanges.")
-                         self?.refreshInterface()
-                         self?.view.throb(duration: 0.05, toScale: 0.85)
-                     } else {
-                         print("Match data remains unchanged.")
-                     }
-                 }
-             }
             
         } else  if match.matchID == self.currentMatch?.matchID {
             
