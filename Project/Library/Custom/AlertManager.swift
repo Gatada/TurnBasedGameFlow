@@ -85,9 +85,9 @@ class AlertManager {
     /// - Parameters:
     ///   - alert: The alert controller to queue.
     ///   - isContextSensitive: If `true` the alert will be shown next, otherwise last.
-    public func presentOrQueueAlert(_ alert: UIAlertController, withMatchID id: String? = nil, ofType type: AlertType = .informative) {
+    public func presentOrQueueAlert(_ alert: UIAlertController, withMatchInfo match: (id: String?, type: AlertType) = (nil, .informative)) {
         
-        let alertDetails = QueuedAlert(alert: alert, type: type, matchID: id)
+        let alertDetails = QueuedAlert(alert: alert, type: match.type, matchID: match.id)
 
         if alertQueue.isEmpty {
             topmostController.present(alert, animated: true) { [weak self] in
@@ -108,7 +108,7 @@ class AlertManager {
             }
             
 
-            if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < type.priority }) {
+            if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < alertDetails.type.priority }) {
                 // Found entry with lower priority than unqueued alert.
                 // Inserting alert at this location so it'll be presented first.
                 alertQueue.insert(alertDetails, at: insertIndex)

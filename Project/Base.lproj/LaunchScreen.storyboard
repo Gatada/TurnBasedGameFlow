@@ -86,6 +86,15 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match Data:" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="9g2-CT-jHa">
+                                        <rect key="frame" x="0.0" y="139" width="132" height="12"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="12" id="lCt-U5-5a0"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
@@ -109,8 +118,11 @@
                                     <constraint firstAttribute="height" constant="450" id="pbi-QD-bNq"/>
                                     <constraint firstItem="pjt-GV-fBA" firstAttribute="trailing" secondItem="I2S-xa-M3g" secondAttribute="trailing" id="qaz-zh-17u"/>
                                     <constraint firstAttribute="width" constant="300" id="rf8-ce-raq"/>
+                                    <constraint firstItem="9g2-CT-jHa" firstAttribute="leading" secondItem="AO6-ub-Chm" secondAttribute="leading" id="sPo-4C-f1O"/>
                                     <constraint firstItem="KWf-jG-wRM" firstAttribute="trailing" secondItem="I2S-xa-M3g" secondAttribute="trailing" id="tTx-3B-tll"/>
+                                    <constraint firstItem="9g2-CT-jHa" firstAttribute="top" secondItem="KWf-jG-wRM" secondAttribute="bottom" constant="8" id="tf1-gQ-4Hs"/>
                                     <constraint firstAttribute="trailing" secondItem="Jil-J2-Ofe" secondAttribute="trailing" id="vsC-5W-ybF"/>
+                                    <constraint firstItem="9g2-CT-jHa" firstAttribute="trailing" secondItem="KWf-jG-wRM" secondAttribute="trailing" id="vyF-d2-3Dc"/>
                                     <constraint firstItem="eo6-VC-Flm" firstAttribute="trailing" secondItem="I2S-xa-M3g" secondAttribute="trailing" id="zNg-QA-4F8"/>
                                 </constraints>
                             </view>

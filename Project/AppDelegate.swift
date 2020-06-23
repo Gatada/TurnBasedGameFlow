@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: GKLocalPlayerListener {
     
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
-        print("Did receive turn event!")
+        print("AppDelegate: Received turn event for match \(match.matchID)!")
     }
 
 }
