@@ -7,13 +7,14 @@ This Xcode project contains one view controller, Simple. It does everything: upd
 This projects shows how to correctly:
 
 1. End a turn.
+1. Quit a game in and out-of-turn.
 1. Update the game without ending turn.
-1. Implement exchanges:
+1. Request, cancel, reply and resolve exchanges. See how to:
 	* Invite one player to trade with (for simplicity, this app only supports one recipient).
-	* Reply to an exchange or let it time out, which moves the `.active` exchange to `.completed`.
-	* And finally how turn holder resolves a completed exchange (happens only when loading the game).
+	* Reply to an exchange or let it time out, which either way moves the `.active` exchange to `.completed`.
+	* And finally how the turn holder resolves a completed exchange (for now this happens only when loading the game).
 
-The app uses a string as game data. For every turn, update and exchange a new string is appended to the match data. The tail of the string is shown in the interface as Match Data.
+The app uses a string as game data. For every turn, update and exchange a new string is appended to the match data so you can see what is happening. The tail of the string is shown in the interface as Match Data.
 
 According to Apple, the turn holder should receive a notification when an exchange is completed, however this is not happening. I have reached out to Apple to get this resolved.
 Meanwhile, you will have to reload the game to resolve completed exchanges.
@@ -27,6 +28,6 @@ To get two random opponents to find each other, I usually have to create at leas
 
 # Feedback Welcome!
 
-If you have suggestions for improving the project, please create a pull request.
+If you have suggestions for improving the project, please create a pull request. Alternatively you can reach me on Twitter @johanhwb.
 
 I hope you find this project useful.
