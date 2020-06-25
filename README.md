@@ -12,12 +12,12 @@ This projects shows how to correctly:
 1. Request, cancel, reply and resolve exchanges. See how to:
 	* Invite one player to trade with (for simplicity, this app only supports one recipient).
 	* Reply to an exchange or let it time out, which either way moves the `.active` exchange to `.completed`.
-	* And finally how the turn holder resolves the completed exchange after receiving a notification (this notification is currently not being sent by Apple, further details below).
+	* And finally how the turn holder resolves the completed exchange after receiving a notification (this notification is currently only sent to the exchange requester, further details below).
 
 The app uses a string as game data. For every turn, update and exchange a new string is appended to the match data so you can see what is happening. The tail of the string is shown in the interface as Match Data.
 
 ### Missing Notification for Turn Holder
-Apple has confirmed that the turn holder should receive a notification when an exchange is completed, and also confirmed that this is currently not happening. Apple will fix it as soon as possible (as this is entirely on the server side, the fix may be rolled out independently from any iOS update).
+Apple has confirmed that the turn holder, when that player is not also the exchange requester (the player initiating a request) should receive a notification when an exchange is completed, and also confirmed that this is currently not happening. Apple will fix it as soon as possible (as this is entirely on the server side, the fix may be rolled out independently from any iOS update).
 
 The Apple tech I talked to recommends that you simply develop your game that uses GKTurnBasedExchanges as if your game will receive the notification.
 
