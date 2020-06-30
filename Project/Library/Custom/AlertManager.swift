@@ -26,7 +26,7 @@ class AlertManager {
     // MARK: - PROPERTIES
     
     /// The key window used to dig out the currently visible view controller.
-    var keyWindow: UIWindow
+    var rootWindow: UIWindow
     
     
     /// Returns the topmost view controller.
@@ -34,7 +34,7 @@ class AlertManager {
     /// Starting from the root view controller of the key window, it parses the entire
     /// view stack to eventually locate the topmost view controller.
     public var topmostController: UIViewController {
-        guard var topController = self.keyWindow.rootViewController else {
+        guard var topController = self.rootWindow.rootViewController else {
             fatalError("Failed to find rootViewController")
         }
         while let presentedViewController = topController.presentedViewController {
@@ -49,10 +49,10 @@ class AlertManager {
     // MARK: - Life Cycle
     
     init() {
-        guard let keyWindow = UIApplication.shared.windows.first else {
+        guard let firstWindow = UIApplication.shared.windows.first else {
             fatalError("Failed to obtain key window from application delegate.")
         }
-        self.keyWindow = keyWindow
+        self.rootWindow = firstWindow
     }
 
     
@@ -87,39 +87,36 @@ class AlertManager {
     ///   - isContextSensitive: If `true` the alert will be shown next, otherwise last.
     public func presentOrQueueAlert(_ alert: UIAlertController, withMatchInfo match: (id: String?, type: AlertType) = (nil, .informative)) {
         
+        assert(Thread.isMainThread, "Please only call AlertManager.presentOrQueueAlert(_:withMatchInfo:) from main thread")
+        
         let alertDetails = QueuedAlert(alert: alert, type: match.type, matchID: match.id)
 
-        if alertQueue.isEmpty {
-            topmostController.present(alert, animated: true) { [weak self] in
-                self?.alertQueue.append(alertDetails)
-            }
-        } else {
-            
-            // Already showing an alert.
-            // Verify that the alert is not a duplicate, then add alert to queue.
-            //
-            // The queue is advanced when visible alert calls
-            // Simple.advanceAlertQueueIfNeeded() as part of its available
-            // actions.
-            
-            guard alertQueue.firstIndex(where: { $0.matchID == alertDetails.matchID && $0.type == alertDetails.type }) == nil else {
-                print("Discarding alert as queue already contains an alert with similar purpose.")
-                return
-            }
-            
-
-            if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < alertDetails.type.priority }) {
-                // Found entry with lower priority than unqueued alert.
-                // Inserting alert at this location so it'll be presented first.
-                alertQueue.insert(alertDetails, at: insertIndex)
-                // print("Inserted alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" at index \(insertIndex).")
-            } else {
-                // No queued alert found with lower priority then unqeued alert.
-                // Appending alert to the end of the queue
-                alertQueue.append(alertDetails)
-                // print("Appended alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" to end of queue.")
-            }
+        guard alertQueue.firstIndex(where: { $0.matchID == alertDetails.matchID && $0.type == alertDetails.type }) == nil else {
+            print("Discarding alert as queue already contains an alert with similar purpose.")
+            return
         }
+        
+        if let insertIndex = alertQueue.firstIndex(where: { $0.type.priority < alertDetails.type.priority }) {
+            // Found entry with lower priority than unqueued alert.
+            // Inserting alert at this location so it'll be presented first.
+            alertQueue.insert(alertDetails, at: insertIndex)
+            // print("Inserted alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" at index \(insertIndex).")
+        } else {
+            // No queued alert found with lower priority then the new alert.
+            // Appending alert to the end of the queue
+            alertQueue.append(alertDetails)
+            // print("Appended alert \"\(alert.title ?? alert.message ?? "Empty Alert")\" to end of queue.")
+        }
+
+        guard rootWindow.isKeyWindow else {
+            print("Probably already showing an alert?")
+            return
+        }
+        
+        topmostController.present(alert, animated: true) { [weak self] in
+            self?.alertQueue.append(alertDetails)
+        }
+
     }
     
     /// Displays the alert controller that is next in the queue.

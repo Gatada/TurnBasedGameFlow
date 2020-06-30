@@ -631,13 +631,67 @@ class Simple: UIViewController {
         
         func gamekitError(_ code: Int) {
             
-            // TODO: JJ
-            
             switch code {
             case 3:
-                presentErrorWithMessage("Error communicating with the server.")
+                
+                // There is at least one important error to deal with here, as Apple has a bug on their server
+                // preventing turn holder from being notified when an exchange is completed.
+                
+                if let underlayingError = (error as NSError).userInfo["NSUnderlyingError"] as? NSError {
+                    switch underlayingError.code {
+                    case 5134:
+                        
+                        // Server-side bug: turn holder was not notified that an exchange has completed,
+                        // so we show an appropriate error code message.
+                        //
+                        // Alternatively, we could reload the match, resolve the exchange and proceed.
+                        
+                        presentErrorWithMessage("Please reload the match as one or more exchanges have completed.", title: "Game Center Bug")
+                        
+                    case 5068:
+                        
+                        // The player is trying to send a reminder to frequently.
+                        
+                        presentErrorWithMessage(underlayingError.localizedDescription, title: "Failed To Send Reminder")
+                        
+                    default:
+                        presentErrorWithMessage(underlayingError.localizedDescription)
+                    }
+                } else {
+                    presentErrorWithMessage("Error communicating with the server.")
+                }
+                
             case 8:
                 presentErrorWithMessage("Sorry, one or more of the participants could not receive the invite.", title: "Failed to create rematch")
+                
+            case 21:
+                
+                if let underlayingError = (error as NSError).userInfo["NSUnderlyingError"] as? NSError {
+                    switch underlayingError.code {
+                    case 5068:
+                        
+                        // The player is trying to sending reminders to frequently.
+                        
+                        let message = underlayingError.localizedDescription
+                        
+                        let numbers = message.components(separatedBy: CharacterSet.decimalDigits.inverted).filter({ !$0.isEmpty })
+
+                        guard let delay = Int(numbers[1]), let elapsed = Int(numbers[2]) else {
+                            presentErrorWithMessage("Please wait at least 10 minutes before sending another reminder.", title: "Could Not Send Reminder")
+                            return
+                        }
+                        
+                        let waitInMinutes = ((delay - elapsed) / 60000) + 1
+                        
+                        presentErrorWithMessage("Please wait \(waitInMinutes) minutes before attempting to send another reminder.", title: "Could Not Send Reminder")
+                        
+                    default:
+                        presentErrorWithMessage(underlayingError.localizedDescription)
+                    }
+                } else {
+                    presentErrorWithMessage("Operation failed. Please wait a while before trying again.")
+                }
+                
             default:
                 presentErrorWithMessage("GameKit Error \(code): \(error.localizedDescription)")
             }
@@ -1444,13 +1498,24 @@ extension Simple {
             // }
             
             let recipient = UIAlertAction(title: participant.player?.displayName ?? "Unknown Player", style: .default) { [weak self, weak alertManager] _ in
-                self?.sendExchange(for: match, to: participant)
+                self?.sendExchange(for: match, to: [participant])
                 alertManager?.advanceAlertQueueIfNeeded()
             }
             
             alert.addAction(recipient)
         }
         
+        if match.participants.count > 2 {
+            let both = UIAlertAction(title: "Both Players", style: .default) { [weak self, weak alertManager] _ in
+                
+                let recipients = match.participants.filter { $0.player?.teamPlayerID != GKLocalPlayer.local.teamPlayerID }
+                self?.sendExchange(for: match, to: recipients)
+                
+                alertManager?.advanceAlertQueueIfNeeded()
+            }
+            alert.addAction(both)
+        }
+
         let cancel = UIAlertAction(title: "Cancel", style: .cancel) { [weak alertManager] _ in
             alertManager?.advanceAlertQueueIfNeeded()
         }
@@ -1503,7 +1568,7 @@ extension Simple {
 
 extension Simple {
     
-    func sendExchange(for match: GKTurnBasedMatch, to recipient: GKTurnBasedParticipant) {
+    func sendExchange(for match: GKTurnBasedMatch, to recipients: [GKTurnBasedParticipant]) {
 
         let stringArguments = [String]()
         let exchangeTimeout: TimeInterval = self.turnTimeout / 2
@@ -1528,8 +1593,6 @@ extension Simple {
         // To fix this I am specifying the recipient playerID in the data.
         // Not sure how else I can avoid turn holder from replying.
         
-        let recipients = [recipient]
-
         // UPDATE:
         // Apple feedback suggests there is no need to add turn holder
         // to the exchange. So I'm removing the below:
@@ -1539,7 +1602,7 @@ extension Simple {
         //     recipients.append(currentParticipant)
         // }
         
-        guard let ID = recipient.player?.teamPlayerID, let exchangeData = Utility.data(fromCodable: ["recipient": ID]) else {
+        guard let exchangeData = Utility.data(fromCodable: ["trading": "someItem"]) else {
             print("Failed to create data")
             return
         }
