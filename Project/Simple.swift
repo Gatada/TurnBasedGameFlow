@@ -126,8 +126,8 @@ class Simple: UIViewController {
         // Various states needed to correctly refresh interface.
 
         let gameEnded = match.status == .ended
-        let isResolvingTurn = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
-        let opponentsStillPlaying = !match.participants.filter({ $0.player?.playerID != GKLocalPlayer.local.playerID && $0.matchOutcome == .none }).isEmpty
+        let isResolvingTurn = match.currentParticipant?.player?.teamPlayerID == GKLocalPlayer.local.teamPlayerID
+        let opponentsStillPlaying = !match.participants.filter({ $0.player?.teamPlayerID != GKLocalPlayer.local.teamPlayerID && $0.matchOutcome == .none }).isEmpty
         let hasLocalOutcome = localParticipant?.matchOutcome != GKTurnBasedMatch.Outcome.none
         let isMatching = match.status == .matching
         
@@ -355,7 +355,7 @@ class Simple: UIViewController {
         }
         
         for participant in match.participants {
-            guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
+            guard participant.player?.teamPlayerID != match.currentParticipant?.player?.teamPlayerID else {
                 participant.matchOutcome = .won
                 continue
             }
@@ -380,7 +380,7 @@ class Simple: UIViewController {
         
         // Setting the outcome for all participants
         for participant in match.participants {
-            guard participant.player?.playerID != match.currentParticipant?.player?.playerID else {
+            guard participant.player?.teamPlayerID != match.currentParticipant?.player?.teamPlayerID else {
                 participant.matchOutcome = .lost
                 continue
             }
@@ -963,7 +963,7 @@ extension Simple: GKLocalPlayerListener {
             """)
 
 
-        guard match.currentParticipant?.player?.playerID == player.playerID  else {
+        guard match.currentParticipant?.player?.teamPlayerID == player.teamPlayerID  else {
             
             // Player want to quit out of turn.
             //
@@ -1019,7 +1019,7 @@ extension Simple: GKLocalPlayerListener {
         
         let alreadyViewingMatch = self.currentMatch?.matchID == match.matchID
 
-        guard let localPlayer = match.participants.filter({ $0.player?.playerID == GKLocalPlayer.local.playerID }).first else {
+        guard let localPlayer = match.participants.filter({ $0.player?.teamPlayerID == GKLocalPlayer.local.teamPlayerID }).first else {
             // print("Local player not found in participants list for match \(match.matchID)")
             return
         }
@@ -1393,7 +1393,7 @@ extension Simple {
         let message: String
         
         let names = Utility.opponentNamesForMatch(match)
-        let isTurnHolder = match.currentParticipant?.player?.playerID == GKLocalPlayer.local.playerID
+        let isTurnHolder = match.currentParticipant?.player?.teamPlayerID == GKLocalPlayer.local.teamPlayerID
         let isReminder = match.matchData == currentMatch?.matchData
         
         if isTurnHolder && isReminder {
@@ -1435,7 +1435,7 @@ extension Simple {
     /// For the sake of simplicity only a single recipient is supported.
     func tradeAlertForMatch(_ match: GKTurnBasedMatch) -> UIAlertController {
         let alert = UIAlertController(title: "Who do you want to trade with?", message: "Please pick your trading partner.", preferredStyle: .alert)
-        for participant in match.participants where participant.player?.playerID != GKLocalPlayer.local.playerID {
+        for participant in match.participants where participant.player?.teamPlayerID != GKLocalPlayer.local.teamPlayerID {
 
             // Supposedly there should be no reason to verify that the particiapnt is indeed a real player.
             // guard participant.status != .matching && participant.player?.playerID != GKLocalPlayer.local.playerID else {
@@ -1539,7 +1539,7 @@ extension Simple {
         //     recipients.append(currentParticipant)
         // }
         
-        guard let ID = recipient.player?.playerID, let exchangeData = Utility.data(fromCodable: ["recipient": ID]) else {
+        guard let ID = recipient.player?.teamPlayerID, let exchangeData = Utility.data(fromCodable: ["recipient": ID]) else {
             print("Failed to create data")
             return
         }
