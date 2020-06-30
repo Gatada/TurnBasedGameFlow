@@ -317,7 +317,7 @@ class Simple: UIViewController {
         }
         
         guard let updatedData = Utility.data(fromCodable: turns + stringForEndTurnInMatch(match)) else {
-            assertionFailure("Failed to encode match data")
+            print("Failed to encode match data")
             return
         }
         

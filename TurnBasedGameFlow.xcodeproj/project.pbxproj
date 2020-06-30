@@ -440,7 +440,7 @@
 				CURRENT_PROJECT_VERSION = xxx;
 				DEVELOPMENT_TEAM = 94DYCUKKGX;
 				INFOPLIST_FILE = "$(SRCROOT)/Project/Library/Resources/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -460,7 +460,7 @@
 				CURRENT_PROJECT_VERSION = xxx;
 				DEVELOPMENT_TEAM = 94DYCUKKGX;
 				INFOPLIST_FILE = "$(SRCROOT)/Project/Library/Resources/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
