@@ -113,10 +113,7 @@ class AlertManager {
             return
         }
         
-        topmostController.present(alert, animated: true) { [weak self] in
-            self?.alertQueue.append(alertDetails)
-        }
-
+        topmostController.present(alert, animated: true, completion: nil)
     }
     
     /// Displays the alert controller that is next in the queue.
