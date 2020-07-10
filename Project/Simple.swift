@@ -1366,7 +1366,7 @@ extension Simple: GKLocalPlayerListener {
         
          print("Data received: \(String(data: data, encoding: String.Encoding.utf8) ?? "")")
 
-        guard let array: [String] = Utility.codableInstance(from: data), let exchangeOutcome = array.first else {
+        guard let exchangeOutcome: String = Utility.codableInstance(from: data) else {
              print("Exchange \(exchange.exchangeID) has unexpected data format!")
              return
          }
@@ -1376,17 +1376,43 @@ extension Simple: GKLocalPlayerListener {
             case .failure(let error):
                 self?.handleError(error)
             case .success(let didMergeCompletedExchanges):
+                
+                // ------------------------------------------------------------------------------------------------------------------------
+                // Apple documenation and WWDC sessions clearly states that it is possible to cancel
+                // even completed exchanges - as long as it hasn't been merged/resolved.
+                //
+                // The Apple Engineer I'm emailing however, suggests that this isn't the case.
+                // And the result is: Engineer 0 - Documenation 1
+
+                let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil) { [weak self] in
+                    self?.alertManager?.advanceAlertQueueIfNeeded()
+                }
+                
+                let cancelCompletedExchange = UIAlertAction(title: "Cancel Exchange!", style: .destructive) { _ in
+                    exchange.cancel(withLocalizableMessageKey: "Cancelled despite being completed!", arguments: []) { error in
+                        if let receivedError = error {
+                            self?.handleError(receivedError)
+                            return
+                        }
+                        
+                        print("Updated match \(self?.currentMatch?.matchID ?? "N/A")")
+                        self?.refreshInterface()
+                    }
+                    self?.alertManager?.advanceAlertQueueIfNeeded()
+                }
+                exchangeResult.addAction(cancelCompletedExchange)
+
+                self?.alertManager?.presentOrQueueAlert(exchangeResult, withMatchInfo: (match.matchID, .respondingToExchange))
+
+                // ------------------------------------------------------------------------------------------------------------------------
+
+                
+
+                
                 if didMergeCompletedExchanges {
                     print("Updated match data with completed exchanges.")
                     self?.refreshInterface()
                     self?.view.throb(duration: 0.05, toScale: 0.85)
-                    
-                    let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil) { [weak self] in
-                        self?.alertManager?.advanceAlertQueueIfNeeded()
-                    }
-                    
-                    self?.alertManager?.presentOrQueueAlert(exchangeResult, withMatchInfo: (match.matchID, .respondingToExchange))
-                    
                 } else {
                     print("Match data remains unchanged.")
                 }
