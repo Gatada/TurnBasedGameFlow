@@ -1134,6 +1134,32 @@ extension Simple: GKLocalPlayerListener {
 
             """)
         
+
+        print("\n\nFinding most recent Turn Date:")
+        var mostRecentTurnDate: Date?
+        for participant in match.participants {
+            if let lastTurnDate = participant.lastTurnDate {
+                guard let mostRecentDate = mostRecentTurnDate else {
+                    mostRecentTurnDate = lastTurnDate
+                    print("First turn date found - this is for \(participant.player?.displayName ?? "Placeholder"): \(lastTurnDate)")
+                    continue
+                }
+                
+                if lastTurnDate > mostRecentDate {
+                    mostRecentTurnDate = lastTurnDate
+                    print("Most recent turn for \(participant.player?.displayName ?? "Placeholder"): \(lastTurnDate)")
+                } else {
+                    print("Player \(participant.player?.displayName ?? "Placeholder") turn date found to be older, nil or invalid: \(String(describing: participant.lastTurnDate))")
+                }
+            }
+        }
+        if let turnDate = mostRecentTurnDate {
+            print("Match Most Recent Turn Date: \(turnDate)\n\n")
+        } else {
+            print("This is a brand new game! No turns have been submitted.\n\n")
+        }
+        
+        
         if didBecomeActive {
             
             // Present the game whenever didBecomeActive is true.
