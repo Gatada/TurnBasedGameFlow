@@ -79,7 +79,8 @@ class Simple: UIViewController {
     }
     var currentMatch: GKTurnBasedMatch? = nil {
         didSet {
-            // print("Current match was updated..")
+            print("Current match was updated..")
+            UIApplication.shared.isIdleTimerDisabled = (currentMatch != nil)
         }
     }
     
@@ -831,6 +832,9 @@ class Simple: UIViewController {
     
     @discardableResult
     func presentNextExchange() -> Bool {
+        
+        print("There are currently \(currentMatch?.activeExchanges?.count ?? 0) active exchange(s).")
+                
         if let match = currentMatch, let exchange = match.activeExchanges?.first, let sender = exchange.sender.player {
             self.player(sender, receivedExchangeRequest: exchange, for: match)
             return true
@@ -841,28 +845,53 @@ class Simple: UIViewController {
     
     func replyToExchange(_ exchange: GKTurnBasedExchange, accepted: Bool?) {
         
+        let mood: String
         let argument: String
-        if let response = accepted {
-            argument = response ? "accepted" : "declined"
+
+        if let wasAccepted = accepted {
+            argument = wasAccepted ? "acc" : "dec"
+            mood = wasAccepted ? "smile" : "cry"
         } else {
-            argument = "ignored"
+            // The exchange timed out (or was deliberately ignored)
+            argument = "shrug"
+            mood = "indifferent"
         }
         
-        guard let responseData = Utility.data(fromCodable: argument) else {
+        // Because ..
+        // 1. an exchange can be between any players in the match.
+        // 2. only the turn holder can update the match data.
+        // 3. the turn holder does not have to take part in an exchange.
+        // 4. Only players participating in the exchange knows it is happening.
+        //
+        // We have include in the exchange data everything required to update
+        // the match data with the exchange result.
+        
+        // PROCESSING EXCHANGE DATA
+        // For this simple mockup game project, that simply means to append
+        // the exchange response to the exchange data (both are strings).
+                
+        guard let exchangeData = exchange.data, let exchangeDataString: String = Utility.codableInstance(from: exchangeData) else {
+            print("Unable to decode string from exchange data")
+            return
+        }
+        
+        let processedExchangeDataSource = exchangeDataString + GKLocalPlayer.local.displayName[...2] + ":" + argument
+        
+        guard let responseData = Utility.data(fromCodable: processedExchangeDataSource) else {
             assertionFailure("Failed to encode arguments to data for exchange reply.")
             return
         }
         
-        let stringArguments = [String]()
+        let stringArguments = [mood]
         
-        exchange.reply(withLocalizableMessageKey: ":-)", arguments: stringArguments, data: responseData) { [weak self] error in
+        exchange.reply(withLocalizableMessageKey: "This exchange made me %@", arguments: stringArguments, data: responseData) { [weak self] error in
             if let receivedError = error {
-                // print("Failed to reply to exchange \(exchange.exchangeID):")
+                print("Failed to reply to exchange \(exchange.exchangeID):")
                 self?.handleError(receivedError)
                 return
             }
             
-            // print("Replied to exchange \(exchange.exchangeID).")
+            print("Replied to exchange \(exchange.exchangeID).")
             self?.refreshInterface()
         }
     }
@@ -875,10 +904,10 @@ class Simple: UIViewController {
             let noArguments = [String]()
             exchange.cancel(withLocalizableMessageKey: ":-/", arguments: noArguments) { [weak self] error in
                 if let receivedError = error {
-                    // print("Failed to cancel exchange \(exchange.exchangeID):")
+                    print("Failed to cancel exchange \(exchange.exchangeID):")
                     self?.handleError(receivedError)
                 } else {
-                    // print("Cancelled exchange \(exchange.exchangeID)!")
+                    print("Cancelled exchange \(exchange.exchangeID)!")
                 }
                 self?.refreshInterface()
             }
@@ -909,7 +938,30 @@ class Simple: UIViewController {
         // Maybe if the match data has not actually changed, it will not trigger
         // a turn event to the other or current player?
         
-        match.saveMergedMatch(resolvedData, withResolvedExchanges: exchanges) { [weak self] error in
+        print("Match data from exchange: \(resolvedData)")
+        
+        // PROCESS DATA BEFORE MERGING
+        
+        guard let processedExchangeData: String = Utility.codableInstance(from: resolvedData) else {
+            print("Unexpected data received with exchange")
+            return
+        }
+        
+        print("Exchange match data description: \(processedExchangeData)")
+        
+        guard let matchData = match.matchData, let currentMatchDataString: String = Utility.codableInstance(from: matchData) else {
+            print("Match data does not contain expected data")
+            return
+        }
+        
+        let updatedMatchDataSource = currentMatchDataString + processedExchangeData
+        
+        guard let updatedMatchData = Utility.data(fromCodable: updatedMatchDataSource) else {
+            print("Unable to decode match data source")
+            return
+        }
+        
+        match.saveMergedMatch(updatedMatchData, withResolvedExchanges: exchanges) { [weak self] error in
             if let receivedError = error {
                 self?.handleError(receivedError)
                 closure(.failure(receivedError))
@@ -921,6 +973,14 @@ class Simple: UIViewController {
 
     
     func printDetailsForExchange(_ exchange: GKTurnBasedExchange, for match: GKTurnBasedMatch, with player: GKPlayer) {
+        
+        var comma = ""
+        var invitees = ""
+        exchange.recipients.forEach({ (recipient) in
+            invitees += comma + player.displayName
+            comma = ", "
+        })
+        
         print( """
             Match   : \(match.matchID) is \(stringForMatchStatus(match.status))
             Exchange: \(exchange.exchangeID)
@@ -928,12 +988,13 @@ class Simple: UIViewController {
             Message : \(exchange.message ?? "")
             Local   : \(GKLocalPlayer.local.displayName)
             Creator : \(player.displayName)
-            Invitee : \(exchange.recipients.first?.player?.displayName ?? "N/A")
+            Invitee : \(invitees)
             Replies : \(exchange.replies?.count ?? 0)
             Resolve : \(match.currentParticipant?.player?.displayName ?? "N/A") will resolve the data.\n
             """)
         
         guard let replies = exchange.replies else {
+            print("Exchange had no replies.")
             return
         }
         
@@ -1134,6 +1195,8 @@ extension Simple: GKLocalPlayerListener {
 
             """)
         
+        // TODO: When a turn update is received, we need to check for completed exchanges,
+        // as a turn timing out seem to also time out any outstanding exchanges.
 
         print("\n\nFinding most recent Turn Date:")
         var mostRecentTurnDate: Date?
@@ -1256,10 +1319,46 @@ extension Simple: GKLocalPlayerListener {
         } else  if match.matchID == self.currentMatch?.matchID {
             
             // In the absence of audio, this is just a simple way to visualize
-            // an game update.
+            // a game update.
             
             currentMatch = match
             self.view.throb(duration: 0.075, toScale: 1.1)
+            
+            // Merge the completed exchanges - if there are any.
+            //
+            // When a turn update is received, we need to check for completed exchanges,
+            // as a turn timing-out seem to also time out any outstanding exchanges?
+
+            if let completedExchanges = match.completedExchanges {
+                var exchangeResult = ""
+                
+                for exchange in completedExchanges {
+                    if let exchangeString = stringForCompletedExchange(exchange) {
+                        exchangeResult += exchangeString
+                    }
+                }
+                
+                guard let placeholderData = updatedMatchDataWithString(exchangeResult, forMatch: match) else {
+                    print("Failed to merge match data")
+                    return
+                }
+                
+                mergeCompletedExchangesAsNeeded(resolvedData: placeholderData) { [weak self] result in
+                    switch result {
+                    case .failure(let error):
+                        self?.handleError(error)
+                    case .success(let didMergeCompletedExchanges):
+                        if didMergeCompletedExchanges {
+                            print("Updated match data with completed exchanges.")
+                            self?.refreshInterface()
+                            self?.view.throb(duration: 0.05, toScale: 0.85)
+                        } else {
+                            print("Match data remains unchanged.")
+                        }
+                    }
+                }
+            }
+            
         
         } else {
         
@@ -1380,22 +1479,32 @@ extension Simple: GKLocalPlayerListener {
         // The exchange is ready for processing: all invitees have responded.
         printDetailsForExchange(exchange, for: match, with: player)
 
-        // If the replies were received by current participant, we might just as well
-        // merge the exchange data with the match data right away:
+        // When a reply is received by the current turn holder, what should be
+        // done depends on your game. You may have "first-come-first-served"
+        // exchanges, or you may have somelike like an auction. For the latter
+        // you will have to wait until everyone has replied, or exchange times
+        // out if not everyone has replied.
         
         let recipientName = exchange.recipients.first?.player?.displayName ?? "N/A"
         
-        guard let data = exchange.replies?.first?.data else {
-             print("Exchange \(exchange.exchangeID) has no data!")
+        guard let firstReply = exchange.replies?.first, let data = firstReply.data else {
+             print("Exchange \(exchange.exchangeID) has no data, bailing!")
              return
          }
         
-         print("Data received: \(String(data: data, encoding: String.Encoding.utf8) ?? "")")
+        // In this mockup game project, the data is just a string. So we convert
+        // it here to make handling it easier:
+        let exchangeDataString = String(data: data, encoding: String.Encoding.utf8)!
+        
+         print("Exchange Data Received: \(exchangeDataString)")
 
         guard let exchangeOutcome: String = Utility.codableInstance(from: data) else {
              print("Exchange \(exchange.exchangeID) has unexpected data format!")
              return
          }
+        
+        
+        let exchangeIsComplete = exchange.status == .complete
 
         self.mergeCompletedExchangesAsNeeded(resolvedData: data) { [weak self] result in
             switch result {
@@ -1409,26 +1518,40 @@ extension Simple: GKLocalPlayerListener {
                 //
                 // The Apple Engineer I'm emailing however, suggests that this isn't the case.
                 // And the result is: Engineer 0 - Documenation 1
-
-                let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcome)!", message: nil) { [weak self] in
-                    self?.alertManager?.advanceAlertQueueIfNeeded()
-                }
                 
-                let cancelCompletedExchange = UIAlertAction(title: "Cancel Exchange!", style: .destructive) { _ in
-                    exchange.cancel(withLocalizableMessageKey: "Cancelled despite being completed!", arguments: []) { error in
-                        if let receivedError = error {
-                            self?.handleError(receivedError)
-                            return
-                        }
-                        
-                        print("Updated match \(self?.currentMatch?.matchID ?? "N/A")")
-                        self?.refreshInterface()
+                // let message = String(format: firstReply.message, firstReply.)
+                
+                if !didMergeCompletedExchanges {
+                
+                    let exchangeOutcomeDisplayString: String
+                    if exchangeOutcome == "acc" {
+                        exchangeOutcomeDisplayString = "accepted"
+                    } else if exchangeOutcome == "dec" {
+                        exchangeOutcomeDisplayString = "declined"
+                    } else {
+                        exchangeOutcomeDisplayString = "ignored exchange"
                     }
-                    self?.alertManager?.advanceAlertQueueIfNeeded()
+                    
+                    let exchangeResult = Utility.alert("\(recipientName) \(exchangeOutcomeDisplayString)!", message: firstReply.message) { [weak self] in
+                        self?.alertManager?.advanceAlertQueueIfNeeded()
+                    }
+                    
+                    let cancelCompletedExchange = UIAlertAction(title: "Cancel Exchange!", style: .destructive) { _ in
+                        exchange.cancel(withLocalizableMessageKey: "Cancelled despite being completed!", arguments: []) { error in
+                            if let receivedError = error {
+                                self?.handleError(receivedError)
+                                return
+                            }
+                            
+                            print("Updated match \(self?.currentMatch?.matchID ?? "N/A")")
+                            self?.refreshInterface()
+                        }
+                        self?.alertManager?.advanceAlertQueueIfNeeded()
+                    }
+                    exchangeResult.addAction(cancelCompletedExchange)
+                    
+                    self?.alertManager?.presentOrQueueAlert(exchangeResult, withMatchInfo: (match.matchID, .respondingToExchange))
                 }
-                exchangeResult.addAction(cancelCompletedExchange)
-
-                self?.alertManager?.presentOrQueueAlert(exchangeResult, withMatchInfo: (match.matchID, .respondingToExchange))
 
                 // ------------------------------------------------------------------------------------------------------------------------
 
@@ -1601,6 +1724,9 @@ extension Simple {
             
             // There is no way to cancel a received request.
             // Either reply with a decline or let the request time-out.
+            //
+            // Letting an exchange time out will slow down the game, as the
+            // exchange is not completed until everyone has replied.
             
             self?.refreshInterface()
             alertManager?.advanceAlertQueueIfNeeded()
@@ -1625,36 +1751,19 @@ extension Simple {
         let stringArguments = [String]()
         let exchangeTimeout: TimeInterval = self.turnTimeout / 2
 
-        // From the documentation:
-        // https://developer.apple.com/documentation/gamekit/gkturnbasedexchange
+        // An exchange can include any players in the match, it can be between
+        // two or more players.
         //
-        // "All exchanges must include the current turn holder, as only the
-        // current turn holder is allowed to update the game status.
-        // [...]
-        // The exchange is complete and the turn holder is notified. The
-        // turn holder then applies the results of the exchange to the
-        // match data and marks it as resolved."
+        // Only the turn holder can update the match data, which is why the
+        // turn holder is notified when an exchange has completed - so the
+        // exchange outcome can affect the match data (be merged with match data).
         //
-        // The last paragraph is confusing, as it appears as if the turn
-        // holder will be notified - unlike the other exchange recipients.
-        //
-        // However, the first paragraph is pretty clear. Which results in
-        // the turn holder will have the opportunity to reply to an exchange
-        // intended for another player.
-        //
-        // To fix this I am specifying the recipient playerID in the data.
-        // Not sure how else I can avoid turn holder from replying.
+        // This has never worked as documented, until Apple fixed it in 2020
+        // after I reported the issue during WWDC. This issue had gone unnoticed
+        // since Game Center was launched in 2010, which is hard to fadom!
         
-        // UPDATE:
-        // Apple feedback suggests there is no need to add turn holder
-        // to the exchange. So I'm removing the below:
-        //
-        // if recipient != currentParticipant {
-        //     print("Exchange recipient is not turn holder, so adding currentParticipant.")
-        //     recipients.append(currentParticipant)
-        // }
-        
-        guard let exchangeData = Utility.data(fromCodable: ["trading": "someItem"]) else {
+        let playerDisplayName = GKLocalPlayer.local.displayName[...2]
+        guard let exchangeData = Utility.data(fromCodable: "+\(playerDisplayName)?") else {
             print("Failed to create data")
             return
         }
